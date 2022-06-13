@@ -8,6 +8,10 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
  * run `setup.bat` (windows)
 
 ### run
- * open cmd
+ * open cmd in project root
  * run `activate.bat`
- * run `streamlit run app.py`
+ * run `streamlit run main.py`
+
+## preview:
+
+![img.png](img.png)
