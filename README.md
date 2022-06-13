@@ -15,6 +15,6 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
 ## preview:
 ![img.png](img.png)
 
-###cheat sheet:
+### streamlit  cheat sheet:
 * https://share.streamlit.io/daniellewisdl/streamlit-cheat-sheet/app.py
 
