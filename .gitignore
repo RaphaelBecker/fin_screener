@@ -127,4 +127,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/TA-lib/
+/external_libs/TA-lib/
