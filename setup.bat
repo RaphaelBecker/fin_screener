@@ -1,8 +1,8 @@
 @ECHO off &setlocal
 
-python --version 2>&1 | findstr "3.7 3.8"
+python --version 2>&1 | findstr "3.7 3.8 3.9"
 IF NOT ERRORLEVEL 0 (
-	ECHO Error: Please make sure you have Python 3.7 or 3.8 in PATH
+	ECHO Error: Please make sure you have Python 3.7, 3.8 or 3.9 in PATH
 ) ELSE (
 	IF NOT EXIST ".\venv\" (
 		ECHO Creating virtual environment...
