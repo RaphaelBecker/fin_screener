@@ -1,8 +1,5 @@
 import cufflinks as cf
-
-from plotly.offline import iplot,init_notebook_mode
-from ipywidgets import interact,interact_manual
-init_notebook_mode()
+import streamlit as st
 
 # Interactive data visualizations using cufflinks
 # Create candlestick page
@@ -18,17 +15,17 @@ class Chart:
 
         # dateformat: %y%m%d
 
-        self.qf.add_trendline(date0='2022-04-04', date1='2022-06-08', from_strfmt='%y%b%d', on='high',
-                              to_strfmt='%Y-%m-%d', color='blue')
+        if st.checkbox('Trendlines'):
+            self.qf.add_trendline(date0='2022-04-04', date1='2022-06-08', from_strfmt='%y%b%d', on='high',
+                                  to_strfmt='%Y-%m-%d', color='blue')
 
-        self.qf.add_trendline(date0='2022-04-01', date1='2022-05-20', from_strfmt='%y%b%d', on='low',
-                              to_strfmt='%Y-%m-%d', color='blue')
+            self.qf.add_trendline(date0='2022-04-01', date1='2022-05-20', from_strfmt='%y%b%d', on='low',
+                                  to_strfmt='%Y-%m-%d', color='blue')
 
-        self.qf.add_support(date='2022-05-20', on='low', mode='starttoend', color='green')
-
-        self.qf.add_resistance(date='2022-03-14', on='low', mode='starttoend')
-
-        self.qf.add_resistance(date='2021-10-05', on='low', mode='starttoend')
+        if st.checkbox('Support and Resistance'):
+            self.qf.add_support(date='2022-05-20', on='low', mode='starttoend', color='green')
+            self.qf.add_resistance(date='2022-03-14', on='low', mode='starttoend')
+            self.qf.add_resistance(date='2021-10-05', on='low', mode='starttoend')
 
         # Technical Analysis Studies can be added on demand
         self.qf.add_rsi(periods=20, color='java')
