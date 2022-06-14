@@ -2,14 +2,14 @@ import numpy as np
 
 
 def is_support(df, i):
-    support = df['low'][i] < df['close'][i - 1] < df['close'][i - 2] and df['low'][i] < df['close'][i + 1] < \
-              df['close'][i + 2]
+    support = df['Low'][i] < df['Close'][i - 1] < df['Close'][i - 2] and df['Low'][i] < df['Close'][i + 1] < \
+              df['Close'][i + 2]
     return support
 
 
 def is_resistance(df, i):
-    resistance = df['high'][i] > df['close'][i - 1] > df['close'][i - 2] and df['high'][i] > df['close'][i + 1] > \
-                 df['close'][i + 2]
+    resistance = df['High'][i] > df['Close'][i - 1] > df['Close'][i - 2] and df['High'][i] > df['Close'][i + 1] > \
+                 df['Close'][i + 2]
     return resistance
 
 
@@ -20,24 +20,24 @@ def is_far_from_level(l, levels, s):
     return np.sum([abs(float(l) - float(x[1])) < s for x in levels]) == 0
 
 
-def find_support_and_resistance_lines(data):
-    data['supp_res_levels'] = np.nan
-    s = np.mean(data['High'].astype('float') - (data['Low'].astype('float')))
+def find_support_and_resistance_lines(dataframe):
+    dataframe['supp_res_levels'] = np.nan
+    s = np.mean(dataframe['High'].astype('float') - (dataframe['Low'].astype('float')))
     levels = []
     start_levels = []
 
-    for i in range(2, data.shape[0] - 2):
-        if is_support(data, i):
-            l = data['Low'][i]
+    for i in range(2, dataframe.shape[0] - 2):
+        if is_support(dataframe, i):
+            l = dataframe['Low'][i]
             if is_far_from_level(l, levels, s):
-                data.at[data.index[i], 'supp_res_levels'] = l
-                levels.append((i, data['Low'][i]))
-                start_levels.append((i, data.index[i]))
-        elif is_resistance(data, i):
-            l = data['High'][i]
+                dataframe.at[dataframe.index[i], 'supp_res_levels'] = l
+                levels.append((i, dataframe['Low'][i]))
+                start_levels.append((i, dataframe.index[i]))
+        elif is_resistance(dataframe, i):
+            l = dataframe['High'][i]
             if is_far_from_level(l, levels, s):
-                data.at[data.index[i], 'supp_res_levels'] = l
-                levels.append((i, data['High'][i]))
-                start_levels.append((i, data.index[i]))
+                dataframe.at[dataframe.index[i], 'supp_res_levels'] = l
+                levels.append((i, dataframe['High'][i]))
+                start_levels.append((i, dataframe.index[i]))
 
-    return data, levels, start_levels
+    return dataframe, levels, start_levels

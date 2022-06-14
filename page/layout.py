@@ -1,4 +1,6 @@
 import streamlit as st
+
+from indicators.support_resistance import find_support_and_resistance_lines
 from page.sidebar import Sidebar
 from page.chart import Chart
 from data.StockDataset import StockDataset
@@ -19,8 +21,7 @@ class Layout:
         # Fetch the data for specified ticker e.g. AAPL from yahoo finance
         df_ticker = pdr.DataReader(self.sidebar.ticker_selector, 'yahoo', self.sidebar.start_date, self.sidebar.end_date)
 
-        if st.checkbox('Heikin Ashi'):
-            df_ticker = heikin_ashi.heikin_ashi(df_ticker)
+        df_ticker, levels, start_levels = find_support_and_resistance_lines(df_ticker)
 
         st.header(f'{self.sidebar.ticker_selector} Stock Price')
 
