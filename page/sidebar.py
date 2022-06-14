@@ -8,5 +8,5 @@ class Sidebar:
         self.ticker_selector = st.sidebar.selectbox('Select ticker', sorted(ticker_list), index=0)
 
         # Set start and end point to fetch data
-        self.start_date = st.sidebar.date_input('Start date', datetime.datetime(2021, 1, 1))
+        self.start_date = st.sidebar.date_input('Start date', datetime.datetime(2021, 8, 1))
         self.end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())

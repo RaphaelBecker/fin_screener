@@ -9,7 +9,7 @@ class StockDataset:
         self.smp500_symbols_link = 'datasets/smp500_symbols.csv'
         self.smp500_symbols = self.get_stock_symbols()
 
-    def snapshot(self, start="2020-01-01", end=str(hlps.get_current_date())):
+    def snapshot(self, start="2021-06-01", end=str(hlps.get_current_date())):
         with open(self.smp500_symbols_link) as f:
             for line in f:
                 if "," not in line:
