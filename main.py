@@ -1,5 +1,4 @@
 import streamlit as st
-from page.chart import Chart
 from page.layout import Layout
 
 # Page Configuration

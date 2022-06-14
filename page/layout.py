@@ -3,6 +3,7 @@ from page.sidebar import Sidebar
 from page.chart import Chart
 from data.StockDataset import StockDataset
 import pandas_datareader as pdr
+import indicators.heikin_ashi as heikin_ashi
 
 
 class Layout:
@@ -17,6 +18,9 @@ class Layout:
 
         # Fetch the data for specified ticker e.g. AAPL from yahoo finance
         df_ticker = pdr.DataReader(self.sidebar.ticker_selector, 'yahoo', self.sidebar.start_date, self.sidebar.end_date)
+
+        # TODO: make heikin ashi optional:
+        df_ticker = heikin_ashi.heikin_ashi(df_ticker)
 
         st.header(f'{self.sidebar.ticker_selector} Stock Price')
 
