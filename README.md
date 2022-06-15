@@ -28,7 +28,12 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
    * trading diary
    * trading checklist
    * portfolio tracker
-   * technical + fundamental screener nach markets
+   * technical + fundamental screener
+     * chart pattern (bukowski), janaese candlesticks
+     * technische indikatoren
+     * overlay studies
+     * fundamental business data (f.e. roi, kgv etc...)
+     * markets (usa, D, etc...), business sector (tech, raw materials, etc...) 
    * watchlist
    * alerts to telegram
    * trading bot
