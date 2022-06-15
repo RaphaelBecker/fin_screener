@@ -21,5 +21,15 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
 ![img.png](img.png)
 
 ### streamlit  cheat sheet:
-* https://share.streamlit.io/daniellewisdl/streamlit-cheat-sheet/app.py
+ * https://share.streamlit.io/daniellewisdl/streamlit-cheat-sheet/app.py
 
+### Wishlist:
+ * different pages
+   * trading diary
+   * trading checklist
+   * portfolio tracker
+   * technical + fundamental screener nach markets
+   * watchlist
+   * alerts to telegram
+   * trading bot
+   * strategy backtesting and save strategy
