@@ -1,3 +1,3 @@
 @echo off
 set bat_patch=%~dp0
-cmd /k "%bat_patch%activate.bat & call streamlit run main.py"
+cmd /k "%bat_patch%activate.bat & call streamlit run welcome.py"

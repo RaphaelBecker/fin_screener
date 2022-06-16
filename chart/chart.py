@@ -1,9 +1,7 @@
 import cufflinks as cf
 import streamlit as st
-
-
 # Interactive data visualizations using cufflinks
-# Create candlestick page
+# Create candlestick pages
 from indicators import heikin_ashi
 
 
@@ -64,5 +62,4 @@ class Chart:
         if 'Vol' in technical_indicators:
             self.qf.add_volume()
 
-        self.fig = self.qf.iplot(asFigure=True, dimensions=(1402, 600), up_color='green', down_color='red')
-        # self.fig = self.qf.iplot()
+        self.fig = self.qf.iplot(asFigure=True, dimensions=(1400, 600), up_color='green', down_color='red')

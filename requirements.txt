@@ -1,6 +1,8 @@
-streamlit
-yfinance
+streamlit~=1.10.0
+yfinance~=0.1.70
 chart_studio
 pandas_datareader==0.10.0
 plotly==5.2.2
 cufflinks==0.17.3
+pandas~=1.4.2
+numpy~=1.22.4
