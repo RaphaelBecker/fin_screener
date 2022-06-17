@@ -23,33 +23,30 @@ with screen_settings:
 
         with col1:
             p_e = st.selectbox('P/E',
-                ('', 'ROdI', 'PEdG'))
+                ('select', 'ROdI', 'PEdG'))
 
         with col2:
             p_b = st.selectbox('P/B',
-                ('', 'R<OI', 'PvEG'))
+                ('select', 'R<OI', 'PvEG'))
 
         with col3:
             sales_grwth = st.selectbox('Sales growth',
-                ('', 'RwxOI', 'PEcwG'))
+                ('select', 'RwxOI', 'PEcwG'))
 
     with st.expander("Technical options"):
         col1, col2, col3 = st.columns(3)
 
         with col1:
             candle_stick_pattern = st.selectbox('Candlestick pattern',
-                ('', 'hammer', 'etc'))
+                ('select', 'hammer', 'etc'))
 
         with col2:
-            candle_stick_pattern = st.selectbox('EMA-Price',
-                ('', 'EMA<price', 'etc'))
+            ema_price = st.selectbox('Bukowski pattern',
+                ('select', 'swan', 'etc'))
 
         with col3:
-            candle_stick_pattern = st.selectbox('SMA-Price',
-                ('', 'SMA<price', 'etc'))
-
-
-
+            sma_price = st.selectbox('SMA-Price',
+                ('select', 'SMA<price', 'etc'))
 
 
 with result_list:
