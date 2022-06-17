@@ -48,10 +48,16 @@ class Chart:
                                   to_strfmt='%Y-%m-%d', color='blue')
 
         if 'S&R' in overlay_studies:
-            self.qf.add_support(date='2022-05-20', on='low', mode='starttoend', color='green')
-            self.qf.add_resistance(date='2022-03-14', on='low', mode='starttoend')
-            self.qf.add_resistance(date='2021-10-05', on='low', mode='starttoend')
-
+            supres_df = df_ticker.dropna(axis=0, how="any", thresh=None, subset='supp_res_levels', inplace=False)
+            last_close = df_ticker.tail(1)['Close'].item()
+            for date, row in supres_df.T.iteritems():
+                if last_close < row['Close'].item():
+                    if row['Low'].item() == row['supp_res_levels'].item():
+                        self.qf.add_resistance(date=str(date.date()), on='low', mode='toend')
+                    if row['High'].item() == row['supp_res_levels'].item():
+                        self.qf.add_resistance(date=str(date.date()), on='high', mode='toend')
+                else:
+                    self.qf.add_support(date=str(date.date()), on='high', mode='toend', color='green')
 
         if 'RSI' in technical_indicators:
             self.qf.add_rsi(periods=20, color='java')
@@ -62,5 +68,5 @@ class Chart:
         if 'Vol' in technical_indicators:
             self.qf.add_volume()
 
-        self.fig = self.qf.iplot(asFigure=True, dimensions=(1400, 600), up_color='green', down_color='red', fixedrange=False)
-
+        self.fig = self.qf.iplot(asFigure=True, dimensions=(1400, 600), up_color='green', down_color='red',
+                                 fixedrange=False)

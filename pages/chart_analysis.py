@@ -26,7 +26,7 @@ st.header(f'{ticker_selector} Stock Price')
 
 if st.checkbox('Show raw data'):
     st.subheader('Raw data')
-    st.write(df_ticker)
+    st.dataframe(df_ticker)
 
 chart = Chart(ticker_selector, df_ticker)
 
