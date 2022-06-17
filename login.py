@@ -1,4 +1,3 @@
-
 import streamlit as st
 from streamlit.logger import get_logger
 
@@ -9,6 +8,16 @@ import pandas as pd
 import hashlib
 
 LOGGER = get_logger(__name__)
+
+st.set_page_config(
+    page_title="Fin App",
+    page_icon="👋",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+st.sidebar.success("Select a demo above.")
+
 
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -52,13 +61,16 @@ def view_all_users():
 def main():
     """Simple Login App"""
 
-    st.title("Simple Login App")
+    st.title("# Welcome to Fin App! 👋")
 
     menu = ["Home", "Login", "SignUp"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
-        st.subheader("Home")
+        st.subheader("**What is this app about?**")
+        st.markdown("""This is your personal investment portal to develop and backtest your own stategies, 
+        analyse the market and find new investment opportunities and of course, manage your risk and emotions. 
+        Further more, this application provides a notification service and lets you automate your trading strategy.""")
 
 
     elif choice == "Login":
@@ -89,9 +101,6 @@ def main():
                     st.dataframe(clean_db)
             else:
                 st.warning("Incorrect Username/Password")
-
-
-
 
 
     elif choice == "SignUp":
