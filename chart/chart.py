@@ -9,7 +9,7 @@ class Chart:
     def __init__(self, ticker, df_ticker):
         self.ticker = ticker
         self.df_ticker = df_ticker
-        self.config = dict({'scrollZoom': True})
+        self.config = dict({'scrollZoom': True, 'theme': 'white'})
         cf.set_config_file(self.config)
 
         # Add technical overlay studies to candlestick chart:
@@ -62,4 +62,5 @@ class Chart:
         if 'Vol' in technical_indicators:
             self.qf.add_volume()
 
-        self.fig = self.qf.iplot(asFigure=True, dimensions=(1400, 600), up_color='green', down_color='red')
+        self.fig = self.qf.iplot(asFigure=True, dimensions=(1400, 600), up_color='green', down_color='red', fixedrange=False)
+

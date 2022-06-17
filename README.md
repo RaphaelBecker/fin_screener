@@ -38,3 +38,9 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
    * alerts to telegram
    * trading bot
    * strategy backtesting and save strategy
+
+### Inspiration:
+ * custom editabel table list:
+   * https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
+ * Good sw architecture in streamlit:
+   * https://github.com/adenhaus/f1-data-viz
