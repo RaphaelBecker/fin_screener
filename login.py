@@ -3,11 +3,12 @@ from streamlit.logger import get_logger
 
 import pandas as pd
 
-# Security
-# passlib,hashlib,bcrypt,scrypt
+# source: https://www.youtube.com/watch?v=JoFGrSRj4X4
 import hashlib
 
 LOGGER = get_logger(__name__)
+
+
 
 st.set_page_config(
     page_title="Fin App",
@@ -59,23 +60,21 @@ def view_all_users():
 
 
 def main():
-    """Simple Login App"""
 
     st.title("# Welcome to Fin App! 👋")
 
-    menu = ["Home", "Login", "SignUp"]
+    menu = ["Login", "SignUp"]
     choice = st.sidebar.selectbox("Menu", menu)
 
-    if choice == "Home":
+
+    if choice == "Login":
+
         st.subheader("**What is this app about?**")
         st.markdown("""This is your personal investment portal to develop and backtest your own stategies, 
         analyse the market and find new investment opportunities and of course, manage your risk and emotions. 
         Further more, this application provides a notification service and lets you automate your trading strategy.""")
 
-
-    elif choice == "Login":
-        st.subheader("Login Section")
-
+        st.write('Login:')
         username = st.text_input("User Name")
         password = st.text_input("Password", type='password')
         if st.button("Login"):
@@ -85,7 +84,6 @@ def main():
 
             result = login_user(username, check_hashes(password, hashed_pswd))
             if result:
-
                 st.success("Logged In as {}".format(username))
 
                 task = st.selectbox("Task", ["Add Post", "Analytics", "Profiles"])

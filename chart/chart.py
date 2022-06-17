@@ -1,7 +1,5 @@
 import cufflinks as cf
 import streamlit as st
-# Interactive data visualizations using cufflinks
-# Create candlestick pages
 from indicators import heikin_ashi
 
 

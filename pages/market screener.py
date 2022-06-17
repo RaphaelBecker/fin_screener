@@ -18,52 +18,67 @@ with header:
         )
 
 with screen_settings:
-    col1, col2, col3 = st.columns(3)
+    with st.expander("Fundamental options"):
+        col1, col2, col3 = st.columns(3)
 
-    with col1:
-        option1 = st.selectbox(
-            'technical indaicator A',
-            ('EBIdTDA', 'ROdI', 'PEdG'))
-        option2 = st.selectbox(
-            'technical indaicator A',
-            ('EByITDA', 'RbOI', 'PvEG'))
-        option3 = st.selectbox(
-            'technical indaicator A',
-            ('EBsITDA', 'RfOI', 'PzEG'))
-        option4 = st.selectbox(
-            'technical indaicator A',
-            ('EBITDA', 'ROI', 'PEG'))
+        with col1:
+            p_e = st.selectbox('P/E',
+                ('', 'ROdI', 'PEdG'))
 
-    with col2:
-        option1 = st.selectbox(
-            'technical indaicator A',
-            ('EBITsdDA', 'R<OI', 'PvEG'))
-        option2 = st.selectbox(
-            'technical indaicator A',
-            ('EBIThgDA', 'RhOI', 'PEjG'))
-        option3 = st.selectbox(
-            'technical indaicator A',
-            ('EBITzm,DA', 'RO,kjI', 'PEGj,'))
-        option4 = st.selectbox(
-            'technical indaicator A',
-            ('EBITDA', 'RbgOI', 'PEgG'))
+        with col2:
+            p_b = st.selectbox('P/B',
+                ('', 'R<OI', 'PvEG'))
 
-    with col3:
-        option1 = st.selectbox(
-            'technical indaicator A',
-            ('EBIqTDA', 'RwxOI', 'PEcwG'))
-        option2 = st.selectbox(
-            'technical indaicator A',
-            ('EBwcITDA', 'RcOI', 'PEwG'))
-        option3 = st.selectbox(
-            'technical indaicator A',
-            ('EBIcTDA', 'ROyxI', 'PEGx'))
-        option4 = st.selectbox(
-            'technical indaicator A',
-            ('EBIyxcTDA', 'ROyxcI', 'PExG'))
+        with col3:
+            sales_grwth = st.selectbox('Sales growth',
+                ('', 'RwxOI', 'PEcwG'))
+
+    with st.expander("Technical options"):
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            candle_stick_pattern = st.selectbox('Candlestick pattern',
+                ('', 'hammer', 'etc'))
+
+        with col2:
+            candle_stick_pattern = st.selectbox('EMA-Price',
+                ('', 'EMA<price', 'etc'))
+
+        with col3:
+            candle_stick_pattern = st.selectbox('SMA-Price',
+                ('', 'SMA<price', 'etc'))
+
+
 
 
 
 with result_list:
     st.button('search market')
     st.write("# This is the result list")
+
+
+fundamental_values='''
+P/E	
+Forward P/E	
+PEG	
+P/S	
+P/B	
+Price/Cash	
+Price/Free Cash Flow	
+EPS growth
+Sales growth
+Return on Assets	
+Return on Equity	
+Return on Investment	
+Current Ratio	
+Quick Ratio	
+LT Debt/Equity	
+Debt/Equity	
+Gross Margin	
+Operating Margin	
+Net Profit Margin	
+Payout Ratio	
+Insider Ownership	
+Insider Transactions	
+Institutional Ownership	
+'''
