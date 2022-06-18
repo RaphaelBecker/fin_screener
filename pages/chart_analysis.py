@@ -3,19 +3,26 @@ import datetime
 from indicators.support_resistance import find_support_and_resistance_lines
 
 from chart.chart import Chart
-from data.StockDataset import StockDataset
+import data.db_connector as database
 import pandas_datareader as pdr
 
 st.markdown("# Analyse assets")
 st.sidebar.markdown("# Analyse assets")
 
-stock_dataset = StockDataset
-ticker_selector = st.sidebar.selectbox('Select ticker', sorted(stock_dataset.tickers), index=0)
+
+def get_ticker_list():
+    ticker_dict_list = database.view_all_tickers()
+    ticker_list = []
+    for ticker_dict in ticker_dict_list:
+        ticker_list.append(ticker_dict["ticker"])
+    return ticker_list
+
+
+ticker_selector = st.sidebar.selectbox('Select ticker', sorted(get_ticker_list()), index=0)
 
 # Set start and end point to fetch data
 start_date = st.sidebar.date_input('Start date', datetime.datetime(2021, 8, 1))
 end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())
-
 
 # Fetch the data for specified ticker e.g. AAPL from yahoo finance
 df_ticker = pdr.DataReader(ticker_selector, 'yahoo', start_date, end_date)

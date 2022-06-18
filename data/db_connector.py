@@ -11,7 +11,7 @@ db_name = 'HLOCV.db'
 root_dir0 = pathlib.Path(__file__).resolve().parents[0]
 db_path = 'sqlite:///' + str(pathlib.Path.joinpath(root_dir0, db_name))
 
-engine = create_engine(db_path, echo=True)
+engine = create_engine(db_path, echo=True, connect_args={"check_same_thread": False})
 db_hlocv_sqlite_connection = engine.connect()
 
 
@@ -31,6 +31,10 @@ def add_hlocv_table(df_ticker, ticker, pair='USD', timeframe='1d', market='yahoo
 
 
 def get_hlocv_from_db(ticker, pair, timeframe, market):
+    # TODO: implement from_datetime to_datetime. Idea:
+    # SELECT  *
+    # FROM    "FB,USD,1d,yahoo"
+    # WHERE   date BETWEEN '2013-07-25 00:00:00.000000' AND '2021-06-18 00:00:00.000000'
     hlocv_table_name = str(ticker + "," + pair + "," + timeframe + "," + market)
     sqlite_query_string = f"SELECT * FROM '{hlocv_table_name}'"
     df_ticker = pd.read_sql(
@@ -67,3 +71,11 @@ def view_all_tickers():
         except ValueError:
             pass
     return ticker_dict_list
+
+
+def get_ticker_list():
+    ticker_dict_list = view_all_tickers()
+    ticker_list = []
+    for ticker_dict in ticker_dict_list:
+        ticker_list.append(ticker_dict["ticker"])
+    return ticker_list
