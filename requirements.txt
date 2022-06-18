@@ -6,3 +6,5 @@ plotly==5.2.2
 cufflinks==0.17.3
 pandas~=1.4.2
 numpy~=1.22.4
+SQLAlchemy~=1.4.37
+Pillow~=9.1.1
