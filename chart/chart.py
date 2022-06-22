@@ -57,7 +57,7 @@ class Chart:
                     if row['High'].item() == row['supp_res_levels'].item():
                         self.qf.add_resistance(date=str(date.date()), on='high', mode='toend')
                 else:
-                    self.qf.add_support(date=str(date.date()), on='high', mode='toend', color='green')
+                    self.qf.add_support(date=str(date.date()), on='low', mode='toend', color='green')
 
         if 'RSI' in technical_indicators:
             self.qf.add_rsi(periods=20, color='java')

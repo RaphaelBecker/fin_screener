@@ -4,14 +4,22 @@ import numpy as np
 
 
 def is_support(df, i):
-    support = df['Low'][i] < df['Close'][i - 1] < df['Close'][i - 2] < df['Close'][i - 3] and df['Low'][i] < df['Close'][i + 1] < \
-              df['Close'][i + 2] < df['Close'][i + 3]
+    support = False
+    try:
+        support = df['Low'][i] < df['Close'][i - 1] < df['Close'][i - 2] < df['Close'][i - 3] and df['Low'][i] < df['Close'][i + 1] < \
+                  df['Close'][i + 2] < df['Close'][i + 3]
+    except IndexError:
+        pass
     return support
 
 
 def is_resistance(df, i):
-    resistance = df['High'][i] > df['Close'][i - 1] > df['Close'][i - 2] > df['Close'][i - 3]  and df['High'][i] > df['Close'][i + 1] > \
-                 df['Close'][i + 2] > df['Close'][i + 3]
+    resistance = False
+    try:
+        resistance = df['High'][i] > df['Close'][i - 1] > df['Close'][i - 2] > df['Close'][i - 3]  and df['High'][i] > df['Close'][i + 1] > \
+                     df['Close'][i + 2] > df['Close'][i + 3]
+    except IndexError:
+        pass
     return resistance
 
 
