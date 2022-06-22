@@ -29,8 +29,9 @@ end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())
 database_update_progress_bar = st.sidebar.progress(0)
 
 if st.sidebar.button('update database'):
-    failed_ticker_list = database.snapshot(helpers.get_symbol_list('data/smp500_symbols.csv'), database_update_progress_bar)
-    st.sidebar.write(f"Download failed on tickers: {failed_ticker_list}")
+    success_ticker_list, failed_ticker_list = database.snapshot(helpers.get_symbol_list('data/smp500_symbols.csv'), database_update_progress_bar)
+    st.sidebar.write(f"Success: {len(success_ticker_list)} / Failed: {len(failed_ticker_list)} "
+                     f" Total: {len(success_ticker_list) +len(failed_ticker_list)}")
 
 # Fetch data from database
 df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)

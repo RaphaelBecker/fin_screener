@@ -9,7 +9,6 @@ import hashlib
 LOGGER = get_logger(__name__)
 
 
-
 st.set_page_config(
     page_title="Fin App",
     page_icon="👋",

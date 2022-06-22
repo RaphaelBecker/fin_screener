@@ -13,7 +13,7 @@ db_name = 'HLOCV.db'
 root_dir0 = pathlib.Path(__file__).resolve().parents[0]
 db_path = 'sqlite:///' + str(pathlib.Path.joinpath(root_dir0, db_name))
 
-engine = sqlalchemy.create_engine(db_path, echo=True, connect_args={"check_same_thread": False})
+engine = sqlalchemy.create_engine(db_path, echo=True, connect_args={"check_same_thread": False, 'timeout': 5})
 db_hlocv_sqlite_connection = engine.connect()
 
 
@@ -117,16 +117,20 @@ def get_hlocv_from_db(ticker, from_date, to_date, timeframe='1d', pair='USD', ma
 
 def snapshot(ticker_list, progress_bar, pair='USD', timeframe='1d', market='yahoo'):
     failed_ticker_list = []
+    success_ticker_list = []
+    progressbar_range = len(ticker_list)
     for i, ticker in enumerate(ticker_list):
         try:
             df_ticker = download_ticker_df(ticker, pair=pair, timeframe=timeframe, market=market)
             add_hlocv_table(df_ticker, ticker, pair, timeframe, market)
+            success_ticker_list.append(ticker)
         except (RemoteDataError, KeyError):
             failed_ticker_list.append(ticker)
             pass
-        progress_bar.progress(i-1 + 1)
-    close_db_connection()
-    return failed_ticker_list
+        # start progressbar with 1 to indicate the user the process started
+        progress = max((int((i/progressbar_range) * 100)-1), 0)
+        progress_bar.progress(2 + progress)
+    return success_ticker_list, failed_ticker_list
 
 
 def view_all_tickers():
