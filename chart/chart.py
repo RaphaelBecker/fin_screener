@@ -1,6 +1,7 @@
 import cufflinks as cf
 import streamlit as st
 from indicators import heikin_ashi
+from indicators.support_resistance import find_support_and_resistance_lines
 
 
 class Chart:
@@ -46,6 +47,7 @@ class Chart:
                                   to_strfmt='%Y-%m-%d', color='blue')
 
         if 'S&R' in overlay_studies:
+            df_ticker, levels, start_levels = find_support_and_resistance_lines(df_ticker)
             supres_df = df_ticker.dropna(axis=0, how="any", thresh=None, subset='supp_res_levels', inplace=False)
             last_close = df_ticker.tail(1)['Close'].item()
             for date, row in supres_df.T.iteritems():

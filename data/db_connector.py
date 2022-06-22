@@ -89,13 +89,15 @@ def add_hlocv_table(df_ticker, ticker, pair='USD', timeframe='1d', market='yahoo
     df_ticker.to_sql(hlocv_table_name, db_hlocv_sqlite_connection, if_exists=if_exists)
 
 
-def get_hlocv_from_db(ticker, pair, timeframe, market):
+def get_hlocv_from_db(ticker, from_date, to_date, timeframe='1d', pair='USD', market='yahoo'):
     # TODO: implement from_datetime to_datetime. Idea:
     # SELECT  *
     # FROM    "FB,USD,1d,yahoo"
     # WHERE   date BETWEEN '2013-07-25 00:00:00.000000' AND '2021-06-18 00:00:00.000000'
     hlocv_table_name = str(ticker + "," + pair + "," + timeframe + "," + market)
-    sqlite_query_string = f"SELECT * FROM '{hlocv_table_name}'"
+    # format: 2014-07-25 00:00:00.000000
+    # fmt = '%Y-%m-%d %H:%M:%S.%s'
+    sqlite_query_string = f"SELECT * FROM '{hlocv_table_name}' WHERE date BETWEEN '{from_date}' AND '{to_date}'"
     df_ticker = pd.read_sql(
         sqlite_query_string,
         con=db_hlocv_sqlite_connection,
@@ -104,7 +106,13 @@ def get_hlocv_from_db(ticker, pair, timeframe, market):
             'updated_at'
         ]
     )
-    return df_ticker
+    # cast date index to datetimeindex as all computation is based on that!:
+    datetime_series = pd.to_datetime(df_ticker['Date'])
+    # create datetime index passing the datetime series
+    datetime_index = pd.DatetimeIndex(datetime_series.values)
+    df_buffer = df_ticker.set_index(datetime_index)
+    df_buffer.drop('Date', axis=1, inplace=True)
+    return df_buffer
 
 
 def snapshot(ticker_list, progress_bar, pair='USD', timeframe='1d', market='yahoo'):

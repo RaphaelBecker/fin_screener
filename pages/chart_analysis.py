@@ -32,10 +32,12 @@ if st.sidebar.button('update database'):
     failed_ticker_list = database.snapshot(helpers.get_symbol_list('data/smp500_symbols.csv'), database_update_progress_bar)
     st.sidebar.write(f"Download failed on tickers: {failed_ticker_list}")
 
-# Fetch the data for specified ticker e.g. AAPL from yahoo finance
-df_ticker = pdr.DataReader(ticker_selector, 'yahoo', start_date, end_date)
+# Fetch data from database
+df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)
 
-df_ticker, levels, start_levels = find_support_and_resistance_lines(df_ticker)
+# Fetch the data for specified ticker e.g. AAPL from yahoo finance
+#df_ticker = pdr.DataReader(ticker_selector, 'yahoo', start_date, end_date)
+
 
 st.header(f'{ticker_selector} Stock Price')
 
