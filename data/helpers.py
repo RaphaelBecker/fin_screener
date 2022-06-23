@@ -1,3 +1,4 @@
+import csv
 
 
 def get_symbol_list(path_to_csv: str):

@@ -8,6 +8,9 @@ header = st.container()
 screen_settings = st.container()
 result_list = st.container()
 
+st.sidebar.markdown("# Market Screener")
+st.sidebar.selectbox('Select index', sorted(['SMP500', 'DAX']), index=0)
+
 with header:
     with st.expander("How does it worK?"):
         st.markdown(

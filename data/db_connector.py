@@ -1,4 +1,6 @@
-import os
+from sqlite3 import OperationalError
+
+import streamlit as st
 import pathlib
 from typing import Optional, Dict
 
@@ -106,6 +108,7 @@ def get_hlocv_from_db(ticker, from_date, to_date, timeframe='1d', pair='USD', ma
             'updated_at'
         ]
     )
+
     # cast date index to datetimeindex as all computation is based on that!:
     datetime_series = pd.to_datetime(df_ticker['Date'])
     # create datetime index passing the datetime series
