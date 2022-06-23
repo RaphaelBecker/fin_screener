@@ -14,13 +14,7 @@ class Chart:
         # Add technical overlay studies to candlestick chart:
         overlay_studies = st.multiselect(
             'Add Overlay Studies',
-            ['BB', 'EMA', 'S&R', 'Trendline', 'Heikin_Ashi'],
-            [])
-
-        # Add technical overlay studies to candlestick chart:
-        technical_indicators = st.multiselect(
-            'Add technical indicators',
-            ['RSI', 'MACD', 'Vol'],
+            ['BB', 'EMA', 'SMA', 'S&R', 'TR', 'Heikin_Ashi'],
             [])
 
         if 'Heikin_Ashi' in overlay_studies:
@@ -39,12 +33,21 @@ class Chart:
             self.qf.add_ema(periods=100, color='orange')
             self.qf.add_ema(periods=200, color='red')
 
-        if 'Trendline' in overlay_studies:
+        if 'SMA' in overlay_studies:
+            self.qf.add_sma(periods=50, color='green')
+            self.qf.add_sma(periods=100, color='orange')
+            self.qf.add_sma(periods=200, color='red')
+
+        if 'TR' in overlay_studies:
             self.qf.add_trendline(date0='2022-04-04', date1='2022-06-08', from_strfmt='%y%b%d', on='high',
                                   to_strfmt='%Y-%m-%d', color='blue')
 
             self.qf.add_trendline(date0='2022-04-01', date1='2022-05-20', from_strfmt='%y%b%d', on='low',
                                   to_strfmt='%Y-%m-%d', color='blue')
+
+        # bug in cufflinks
+        #if 'PTPS' in overlay_studies:
+        #    self.qf.add_ptps()
 
         if 'S&R' in overlay_studies:
             df_ticker, levels, start_levels = find_support_and_resistance_lines(df_ticker)
@@ -53,11 +56,18 @@ class Chart:
             for date, row in supres_df.T.iteritems():
                 if last_close < row['Close'].item():
                     if row['Low'].item() == row['supp_res_levels'].item():
-                        self.qf.add_resistance(date=str(date.date()), on='low', mode='toend')
+                        self.qf.add_resistance(date=str(date.date()), on='low', mode='toend', text='t')
                     if row['High'].item() == row['supp_res_levels'].item():
-                        self.qf.add_resistance(date=str(date.date()), on='high', mode='toend')
+                        self.qf.add_resistance(date=str(date.date()), on='high', mode='toend', text='t')
                 else:
-                    self.qf.add_support(date=str(date.date()), on='low', mode='toend', color='green')
+                    self.qf.add_support(date=str(date.date()), on='low', mode='toend', color='green', text='t')
+
+
+        # Add technical overlay studies to candlestick chart:
+        technical_indicators = st.multiselect(
+            'Add technical indicators',
+            ['RSI', 'MACD', 'ADX', 'ATR', 'CCI', 'DMI', 'VOL'],
+            [])
 
         if 'RSI' in technical_indicators:
             self.qf.add_rsi(periods=20, color='java')
@@ -65,8 +75,20 @@ class Chart:
         if 'MACD' in technical_indicators:
             self.qf.add_macd(fast_period=12, slow_period=26, signal_period=9)
 
-        if 'Vol' in technical_indicators:
+        if 'VOL' in technical_indicators:
             self.qf.add_volume()
+
+        if 'ADX' in technical_indicators:
+            self.qf.add_adx()
+
+        if 'ATR' in technical_indicators:
+            self.qf.add_atr()
+
+        if 'CCI' in technical_indicators:
+            self.qf.add_cci()
+        # Directional Movement Index (DMI)
+        if 'DMI' in technical_indicators:
+            self.qf.add_dmi()
 
         self.fig = self.qf.iplot(asFigure=True, dimensions=(1400, 600), up_color='green', down_color='red',
                                  fixedrange=False)
