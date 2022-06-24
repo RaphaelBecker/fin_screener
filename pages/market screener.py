@@ -1,5 +1,6 @@
 import streamlit as st
-
+from streamlit_tags import st_tags, st_tags_sidebar
+import re
 
 st.write("# This is the market screener")
 
@@ -12,49 +13,111 @@ st.sidebar.markdown("# Market Screener")
 st.sidebar.selectbox('Select index', sorted(['SMP500', 'DAX']), index=0)
 
 with header:
-    with st.expander("How does it worK?"):
+    with st.expander("Available commands and indicators"):
         st.markdown(
         """
-        1. Set up the screener settings
-        2. screen the market
+        TODO: Show available commands and indicators here
+        
+        Fundamental indicators:
+        ....
+        Technical Indicators:
+        ....
         """
         )
 
 with screen_settings:
     with st.expander("Fundamental options"):
-        col1, col2, col3 = st.columns(3)
+        st.write("TBD")
 
-        with col1:
-            p_e = st.selectbox('P/E',
-                ('select', 'ROdI', 'PEdG'))
-
-        with col2:
-            p_b = st.selectbox('P/B',
-                ('select', 'R<OI', 'PvEG'))
-
-        with col3:
-            sales_grwth = st.selectbox('Sales growth',
-                ('select', 'RwxOI', 'PEcwG'))
 
     with st.expander("Technical options"):
-        col1, col2, col3 = st.columns(3)
+        keywords = st_tags(
+            label='# Entry Strategy:',
+            text='Press enter to add more',
+            value=['<ema-20', 'close<ema-20', 'close>ema-50', 'low>lowerbb', 'close<234', 'sma-200upturn',
+                   'sma-200downturn',
+                   'sma-20'
+                   '<sma-50'],
+            suggestions=['<ema-20', 'close<ema-20', 'close>ema-50', 'low>lowerbb', 'close<234', 'sma-200upturn',
+                         'sma-200downturn', 'sma-20<sma-50'],
+            maxtags=50,
+            key="entry_stategy")
 
-        with col1:
-            candle_stick_pattern = st.selectbox('Candlestick pattern',
-                ('select', 'hammer', 'etc'))
+# QUERY PARSER:
 
-        with col2:
-            ema_price = st.selectbox('Bukowski pattern',
-                ('select', 'swan', 'etc'))
-
-        with col3:
-            sma_price = st.selectbox('SMA-Price',
-                ('select', 'SMA<price', 'etc'))
+## possible boolean operations in keys:
+# price - oper - ind,
+# price - oper - val,
+# ind - oper - ind,
+# ind - oper - val,
+# ind - oper - bool
 
 
-with result_list:
-    st.button('search market')
-    st.write("# This is the result list")
+# classification:
+def price(key: str) -> bool:
+    if key in ['high', 'low', 'close', 'open']:
+        return True
+
+
+def operator(key: str) -> bool:
+    if key in ['<', '>', '=', '-', '_']:
+        return True
+
+
+def indicator(key: str) -> bool:
+    if not price(key):
+        if not operator(key):
+            return True
+
+
+# parse logic
+entry_strategy_query_list = []
+i = 0
+for key in keywords:
+    key = re.split('(<|>|=|-|upturn|downturn)', key)
+    key = list(filter(None, key))
+    entry_strategy_query_list.append(key)
+
+
+def check_format(entry_strategy_query_list):
+    for query_list, query_string in zip(entry_strategy_query_list, keywords):
+        if operator(query_list[0]):
+            st.write(
+                f"Format error: '{query_string}' ignored!")
+            st.write("Begin with price type ('close' or 'low' etc.) or indicator type ('ema-20', cci-50)")
+            keywords.remove(query_string)
+            entry_strategy_query_list.remove(query_list)
+
+
+st.write("#### Format Check:")
+check_format(entry_strategy_query_list)
+st.write("#### List:")
+st.write(keywords)
+st.write("#### parsed:")
+st.write(entry_strategy_query_list)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 fundamental_values='''
