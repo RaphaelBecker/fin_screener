@@ -2,6 +2,8 @@ import streamlit as st
 from streamlit_tags import st_tags, st_tags_sidebar
 import re
 
+from data import dataset
+
 st.write("# This is the market screener")
 
 # Set up sections of web page
@@ -10,7 +12,17 @@ screen_settings = st.container()
 result_list = st.container()
 
 st.sidebar.markdown("# Market Screener")
-index = st.sidebar.selectbox('Select index', sorted(['SMP500', 'DAX']), index=0)
+# select market
+indexTickerList = st.sidebar.selectbox('Select index', sorted(dataset.market_index_list), index=0)
+
+
+def get_index_ticker_list(index_ticker_list):
+    # Select ticker from choosen market:
+    index_ticker_list = dataset.get_tickers(index_ticker_list)
+    if isinstance(index_ticker_list, dict):
+        index_ticker_list = index_ticker_list.keys()
+    return index_ticker_list
+
 
 with header:
     with st.expander("Available commands and indicators"):
@@ -72,11 +84,12 @@ def price(key: str) -> bool:
 
 
 def operator(key: str) -> bool:
+    found = False
     for operator in ['<', '>', '=', '-', '_']:
         if key.find(operator) != -1:
-            return True
-        else:
-            return False
+            found = True
+            break
+    return found
 
 
 def value(key: str) -> bool:
@@ -95,19 +108,26 @@ def indicator(key: str) -> bool:
                 return False
 
 
-def filter_index(entry_strategy_query_list, index):
-    for entry_list in entry_strategy_query_list:
-        st.write(f"Length: {len(entry_list)}")
-        for item in entry_list:
-            if price(item):
-                st.write(f"{item} -> Price")
-            if operator(item):
-                st.write(f"{item} -> Operator")
-            if indicator(item):
-                st.write(f"{item} -> Indicator")
-            if value(item):
-                st.write(f"{item} -> Value")
+def filter_index(entry_strategy_query_list, index_ticker_list):
+    progressbar_range = len(index_ticker_list)
+    filter_progress_bar = st.progress(0)
+    for i, ticker in enumerate(index_ticker_list):
+        st.write("Ticker: ", ticker)
+        for entry_list in entry_strategy_query_list:
+            st.write("Condition: ", str(entry_list))
+            for item in entry_list:
+                if price(item):
+                    st.write("*  Price: ", item)
+                if operator(item):
+                    st.write("*  Operator: ", item)
+                if indicator(item):
+                    st.write("*  Indicator: ", item)
+                if value(item):
+                    st.write("*  Value: ", item)
+        progress = max((int((i/progressbar_range) * 100)-1), 0)
+        filter_progress_bar.progress(2 + progress)
         st.write("---------------------")
+    filter_progress_bar.success("Finished!")
 
 
 def check_format(entry_strategy_query_list, keywords):
@@ -128,8 +148,8 @@ with st.expander("List:"):
     st.write(keyWords)
 with st.expander("Parsed:"):
     st.write(entryStrategyQueryList)
-with st.expander("Parsed computation:"):
-    filter_index(entryStrategyQueryList, index)
+if st.button("Run screener"):
+    filter_index(entryStrategyQueryList, get_index_ticker_list(indexTickerList))
 
 fundamental_values = '''
 P/E	

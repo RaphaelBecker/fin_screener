@@ -56,11 +56,11 @@ class Chart:
             for date, row in supres_df.T.iteritems():
                 if last_close < row['Close'].item():
                     if row['Low'].item() == row['supp_res_levels'].item():
-                        self.qf.add_resistance(date=str(date.date()), on='low', mode='toend', text='t')
+                        self.qf.add_resistance(date=str(date.date()), on='low', mode='toend')
                     if row['High'].item() == row['supp_res_levels'].item():
-                        self.qf.add_resistance(date=str(date.date()), on='high', mode='toend', text='t')
+                        self.qf.add_resistance(date=str(date.date()), on='high', mode='toend')
                 else:
-                    self.qf.add_support(date=str(date.date()), on='low', mode='toend', color='green', text='t')
+                    self.qf.add_support(date=str(date.date()), on='low', mode='toend', color='green')
 
 
         # Add technical overlay studies to candlestick chart:

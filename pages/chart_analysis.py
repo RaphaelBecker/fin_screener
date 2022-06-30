@@ -30,6 +30,7 @@ if st.sidebar.button('update database'):
     success_ticker_list, failed_ticker_list = database.snapshot(helpers.get_symbol_list('data/smp500_symbols.csv'), database_update_progress_bar)
     st.sidebar.write(f"Success: {len(success_ticker_list)} / Failed: {len(failed_ticker_list)} "
                      f" Total: {len(success_ticker_list) +len(failed_ticker_list)}")
+    database_update_progress_bar.success("Successfully updated database!")
 
 # Fetch data from database
 df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)
@@ -38,9 +39,9 @@ df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)
 #df_ticker = pdr.DataReader(ticker_selector, 'yahoo', start_date, end_date)
 
 if isinstance(tickers, list):
-    st.header(f'{ticker_selector}  last: {df_ticker.tail(1).index.item()}')
+    st.header(f'{ticker_selector},  last: {df_ticker.tail(1).index.item()}')
 elif isinstance(tickers, dict):
-    st.header(f'{ticker_selector}, {tickers[ticker_selector]}  last: {df_ticker.tail(1).index.item()}')
+    st.header(f'[{ticker_selector}] {tickers[ticker_selector]}, last: {df_ticker.tail(1).index.item().date()}')
 
 
 if st.checkbox('Show raw data'):

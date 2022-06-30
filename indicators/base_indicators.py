@@ -25,7 +25,7 @@ def calculate_indicators(dataframe):
     dataframe["macd_hist_gradient"] = np.nan
     for i in range(1, len(dataframe)):
         try:
-            dataframe.at[dataframe.index[i], "macd_hist_gradient"] = dataframe.at[dataframe.index[i - 1], "macd_hist"] - dataframe.at[dataframe.index[i], "macd_hist"]
+            dataframe.at[dataframe.index[i], "macd_hist_gradient"] = dataframe.at[dataframe.indexTickerList[i - 1], "macd_hist"] - dataframe.at[dataframe.indexTickerList[i], "macd_hist"]
         except IndexError:
             pass
 

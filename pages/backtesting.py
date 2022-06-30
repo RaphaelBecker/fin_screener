@@ -40,10 +40,9 @@ def plotting_backtest():
 
 st.markdown("# Backtesting demo")
 st.sidebar.header("Backtesting demo")
-st.write(
-    """This demo illustrates a combination of plotting and animation with
-Streamlit. We're generating a bunch of random numbers in a loop for around
-5 seconds. Enjoy!"""
-)
+st.write("""Ideas :""")
+st.write("    * Backtesting your strategy")
+st.write("* ML Backtesting")
+
 
 plotting_backtest()
