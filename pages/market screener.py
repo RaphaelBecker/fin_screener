@@ -10,12 +10,12 @@ screen_settings = st.container()
 result_list = st.container()
 
 st.sidebar.markdown("# Market Screener")
-st.sidebar.selectbox('Select index', sorted(['SMP500', 'DAX']), index=0)
+index = st.sidebar.selectbox('Select index', sorted(['SMP500', 'DAX']), index=0)
 
 with header:
     with st.expander("Available commands and indicators"):
         st.markdown(
-        """
+            """
         TODO: Show available commands and indicators here
         
         Fundamental indicators:
@@ -29,9 +29,8 @@ with screen_settings:
     with st.expander("Fundamental options"):
         st.write("TBD")
 
-
     with st.expander("Technical options"):
-        keywords = st_tags(
+        keyWords = st_tags(
             label='# Entry Strategy:',
             text='Press enter to add more',
             value=['<ema-20', 'close<ema-20', 'close>ema-50', 'low>lowerbb', 'close<234', 'sma-200upturn',
@@ -43,6 +42,7 @@ with screen_settings:
             maxtags=50,
             key="entry_stategy")
 
+
 # QUERY PARSER:
 
 ## possible boolean operations in keys:
@@ -52,34 +52,65 @@ with screen_settings:
 # ind - oper - val,
 # ind - oper - bool
 
+def strategy_list(keywords):
+    # parse logic
+    entry_strategy_query_list = []
+    i = 0
+    for key in keywords:
+        key = re.split('(<|>|=|-|upturn|downturn)', key)
+        key = list(filter(None, key))
+        entry_strategy_query_list.append(key)
+    return entry_strategy_query_list
+
 
 # classification:
 def price(key: str) -> bool:
-    if key in ['high', 'low', 'close', 'open']:
+    if key.lower() in ['high', 'low', 'close', 'open']:
         return True
+    else:
+        return False
 
 
 def operator(key: str) -> bool:
-    if key in ['<', '>', '=', '-', '_']:
+    for operator in ['<', '>', '=', '-', '_']:
+        if key.find(operator) != -1:
+            return True
+        else:
+            return False
+
+
+def value(key: str) -> bool:
+    if key.isdigit():
         return True
+    else:
+        return False
 
 
 def indicator(key: str) -> bool:
     if not price(key):
         if not operator(key):
-            return True
+            if not value(key):
+                return True
+            else:
+                return False
 
 
-# parse logic
-entry_strategy_query_list = []
-i = 0
-for key in keywords:
-    key = re.split('(<|>|=|-|upturn|downturn)', key)
-    key = list(filter(None, key))
-    entry_strategy_query_list.append(key)
+def filter_index(entry_strategy_query_list, index):
+    for entry_list in entry_strategy_query_list:
+        st.write(f"Length: {len(entry_list)}")
+        for item in entry_list:
+            if price(item):
+                st.write(f"{item} -> Price")
+            if operator(item):
+                st.write(f"{item} -> Operator")
+            if indicator(item):
+                st.write(f"{item} -> Indicator")
+            if value(item):
+                st.write(f"{item} -> Value")
+        st.write("---------------------")
 
 
-def check_format(entry_strategy_query_list):
+def check_format(entry_strategy_query_list, keywords):
     for query_list, query_string in zip(entry_strategy_query_list, keywords):
         if operator(query_list[0]):
             st.write(
@@ -89,38 +120,18 @@ def check_format(entry_strategy_query_list):
             entry_strategy_query_list.remove(query_list)
 
 
-st.write("#### Format Check:")
-check_format(entry_strategy_query_list)
-st.write("#### List:")
-st.write(keywords)
-st.write("#### parsed:")
-st.write(entry_strategy_query_list)
+entryStrategyQueryList = strategy_list(keyWords)
 
+with st.expander("Format Check:"):
+    check_format(entryStrategyQueryList, keyWords)
+with st.expander("List:"):
+    st.write(keyWords)
+with st.expander("Parsed:"):
+    st.write(entryStrategyQueryList)
+with st.expander("Parsed computation:"):
+    filter_index(entryStrategyQueryList, index)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-fundamental_values='''
+fundamental_values = '''
 P/E	
 Forward P/E	
 PEG	
