@@ -1,8 +1,14 @@
+import datetime
+import time
+
 import streamlit as st
+import talib
 from streamlit_tags import st_tags, st_tags_sidebar
 import re
-
+import numpy as np
 from data import dataset
+from data import db_connector as database
+from chart import chart_mpl
 
 st.write("# This is the market screener")
 
@@ -13,7 +19,7 @@ result_list = st.container()
 
 st.sidebar.markdown("# Market Screener")
 # select market
-indexTickerList = st.sidebar.selectbox('Select index', sorted(dataset.market_index_list), index=0)
+index_selector = st.sidebar.selectbox('Select index', sorted(dataset.market_index_list), index=0)
 
 
 def get_index_ticker_list(index_ticker_list):
@@ -108,26 +114,49 @@ def indicator(key: str) -> bool:
                 return False
 
 
-def filter_index(entry_strategy_query_list, index_ticker_list):
-    progressbar_range = len(index_ticker_list)
-    filter_progress_bar = st.progress(0)
+def compute_talib_function(ohlcv_dataframe, talib_function_name, talib_function_args):
+    print('Executing talib function: ' + talib_function_name + '(' + talib_function_args + ')')
+    talib_function = getattr(talib, talib_function_name)
+    ohlcv_dataframe[talib_function_name] = np.nan
+    try:
+        # TODO Mapping, how to built function argument list dynamically???
+        result = talib_function(ohlcv_dataframe['open'], ohlcv_dataframe['high'], ohlcv_dataframe['low'],
+                                ohlcv_dataframe['close'])
+        ohlcv_dataframe[talib_function_name] = result.to_frame().replace(0, np.nan).replace(100, 1)
+    except IndexError:
+        print('IndexError!')
+        pass
+    return ohlcv_dataframe
+
+
+def get_tickers_indicators_dataframe_list(entry_strategy_query_list, index_ticker_list, start_date, end_date):
+    tickers_indicators_dataframe_list = []
+    # TODO: delete, because of development reduced to 2 dataframes
+    index_ticker_list = index_ticker_list[0:5]
+    # TODO: Remove debug string when finished
+    debug_string = ""
+    # ------------------------------------------------------------
     for i, ticker in enumerate(index_ticker_list):
-        st.write("Ticker: ", ticker)
+        debug_string = debug_string + "Ticker: " + ticker + ", \n"
+        # (1) reduce index_ticker_list by conditions and add indicators to dataframe:
         for entry_list in entry_strategy_query_list:
-            st.write("Condition: ", str(entry_list))
+            debug_string = debug_string + "Condition: " + str(entry_list) + "\n"
             for item in entry_list:
                 if price(item):
-                    st.write("*  Price: ", item)
+                    debug_string = debug_string + "*  Price: " + item + "\n"
                 if operator(item):
-                    st.write("*  Operator: ", item)
+                    debug_string = debug_string + "*  Operator: " + item + "\n"
                 if indicator(item):
-                    st.write("*  Indicator: ", item)
+                    debug_string = debug_string + "*  Indicator: " + item + "\n"
                 if value(item):
-                    st.write("*  Value: ", item)
-        progress = max((int((i/progressbar_range) * 100)-1), 0)
-        filter_progress_bar.progress(2 + progress)
-        st.write("---------------------")
-    filter_progress_bar.success("Finished!")
+                    debug_string = debug_string + "*  Value: " + item + "\n"
+        # TODO: Workaround because (1) no yet implemented
+        # Fetch data from database
+        hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
+        tickers_indicators_dataframe_list.append(hlocv_dataframe)
+        # ------------------------------------------------
+        debug_string = debug_string + "---------------------" + "\n"
+    return tickers_indicators_dataframe_list, debug_string
 
 
 def check_format(entry_strategy_query_list, keywords):
@@ -140,6 +169,16 @@ def check_format(entry_strategy_query_list, keywords):
             entry_strategy_query_list.remove(query_list)
 
 
+def plot_chart(ticker_indicators_dataframe):
+    return chart_mpl.plot_chart(ticker_indicators_dataframe)
+
+
+# main:
+
+# Set start and end point to fetch data:
+start_date = st.sidebar.date_input('Start date', datetime.datetime(2021, 8, 1))
+end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())
+
 entryStrategyQueryList = strategy_list(keyWords)
 
 with st.expander("Format Check:"):
@@ -148,8 +187,64 @@ with st.expander("List:"):
     st.write(keyWords)
 with st.expander("Parsed:"):
     st.write(entryStrategyQueryList)
-if st.button("Run screener"):
-    filter_index(entryStrategyQueryList, get_index_ticker_list(indexTickerList))
+
+tickersIndicatorsDataframeList = []
+debugString = ""
+if st.checkbox("Run screener"):
+    with st.spinner('Screening the market ..'):
+        tickersIndicatorsDataframeList, debugString = get_tickers_indicators_dataframe_list(entryStrategyQueryList,
+                                                                                            get_index_ticker_list(
+                                                                                                index_selector),
+                                                                                            start_date,
+                                                                                            end_date)
+    st.success('Screened the market!')
+
+    if st.checkbox("show debug logs"):
+        st.write(debugString)
+
+    if st.checkbox("show raw dataframe"):
+        for dataframe in tickersIndicatorsDataframeList:
+            st.dataframe(dataframe)
+
+    if st.checkbox("plot the dataframes"):
+        for dataframe in tickersIndicatorsDataframeList:
+            figure = plot_chart(dataframe)
+            st.pyplot(figure)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 fundamental_values = '''
 P/E	

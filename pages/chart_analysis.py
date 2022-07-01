@@ -35,9 +35,7 @@ if st.sidebar.button('update database'):
 # Fetch data from database
 df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)
 
-# Fetch the data for specified ticker e.g. AAPL from yahoo finance
-#df_ticker = pdr.DataReader(ticker_selector, 'yahoo', start_date, end_date)
-
+# title of ticker:
 if isinstance(tickers, list):
     st.header(f'{ticker_selector},  last: {df_ticker.tail(1).index.item()}')
 elif isinstance(tickers, dict):
