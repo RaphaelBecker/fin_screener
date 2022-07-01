@@ -8,3 +8,6 @@ pandas~=1.4.2
 numpy~=1.22.4
 SQLAlchemy~=1.4.37
 Pillow~=9.1.1
+matplotlib~=3.5.2
+mplfinance~=0.12.9b1
+finta~=1.3

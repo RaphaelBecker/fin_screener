@@ -131,8 +131,8 @@ def compute_talib_function(ohlcv_dataframe, talib_function_name, talib_function_
 
 def get_tickers_indicators_dataframe_list(entry_strategy_query_list, index_ticker_list, start_date, end_date):
     tickers_indicators_dataframe_list = []
-    # TODO: delete, because of development reduced to 2 dataframes
-    index_ticker_list = index_ticker_list[0:5]
+    # TODO: delete, because of development reduced to 5 dataframes
+    index_ticker_list = index_ticker_list[0:50]
     # TODO: Remove debug string when finished
     debug_string = ""
     # ------------------------------------------------------------
@@ -153,6 +153,7 @@ def get_tickers_indicators_dataframe_list(entry_strategy_query_list, index_ticke
         # TODO: Workaround because (1) no yet implemented
         # Fetch data from database
         hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
+        hlocv_dataframe.symbol = str(ticker)
         tickers_indicators_dataframe_list.append(hlocv_dataframe)
         # ------------------------------------------------
         debug_string = debug_string + "---------------------" + "\n"
@@ -207,9 +208,11 @@ if st.checkbox("Run screener"):
             st.dataframe(dataframe)
 
     if st.checkbox("plot the dataframes"):
-        for dataframe in tickersIndicatorsDataframeList:
+        for i, dataframe in enumerate(tickersIndicatorsDataframeList):
             figure = plot_chart(dataframe)
             st.pyplot(figure)
+            if st.button("trade", key="trade_" + str(i)):
+                st.write("Trading journal entry pop up")
 
 
 

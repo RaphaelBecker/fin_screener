@@ -37,7 +37,7 @@ df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)
 
 # title of ticker:
 if isinstance(tickers, list):
-    st.header(f'{ticker_selector},  last: {df_ticker.tail(1).index.item()}')
+    st.header(f'{ticker_selector},  last: {df_ticker.tail(1).index.item().date()}')
 elif isinstance(tickers, dict):
     st.header(f'[{ticker_selector}] {tickers[ticker_selector]}, last: {df_ticker.tail(1).index.item().date()}')
 

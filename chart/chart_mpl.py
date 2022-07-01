@@ -1,13 +1,14 @@
-import pathlib
-
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas
 from mplfinance.original_flavor import candlestick_ohlc
 from matplotlib.pylab import date2num
 
 
 def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
+    if ohlcvind_ticker_dataframe.symbol:
+        title_string = "Symbol: " + ohlcvind_ticker_dataframe.symbol + ", last: " + str(ohlcvind_ticker_dataframe.tail(1).index.item().date())
+    else:
+        title_string = "title not available"
 
     ohlc = []
     for date, row in ohlcvind_ticker_dataframe.iterrows():
@@ -15,7 +16,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
         ohlc.append([date2num(date), float(openp), float(highp), float(lowp), float(closep)])
 
     # Create figure and set axes for subplots
-    plt.style.use('seaborn-darkgrid')
+    plt.style.use('seaborn-white')
 
     plt.rcParams.update({'font.size': 8})
     fig = plt.figure()
@@ -23,6 +24,8 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     # ax_candle = fig.add_axes((0, 0.72, 1, 0.32))
     ax_candle = fig.add_axes((0, 0.48, 1, 0.63))
     ax_candle.tick_params(axis='y', which='both', labelleft=False, labelright=True)
+
+    plt.suptitle(title_string, ha='center', y=1.14, fontsize=10)
 
     # Format x-axis ticks as dates
     ax_candle.xaxis_date()
