@@ -142,7 +142,6 @@ pattern_recognition = {
     'CDLXSIDEGAP3METHODS': 'Upside/Downside Gap Three Methods'
 }
 
-
 statistic_functions = {
     "BETA": "Beta",
     "CORREL": "Pearson's Correlation Coefficient (r)",
@@ -186,3 +185,10 @@ math_operators = {
     "SUB": "Vector Arithmetic Substraction",
     "SUM": "Summation"
 }
+
+overlap_studies_functions = {
+    'BBANDS': {"BBANDS(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)": ["upperband", "middleband", "lowerband"]},
+    'EMA': {"EMA(close, timeperiod=30)": "ema"}
+}
+
+

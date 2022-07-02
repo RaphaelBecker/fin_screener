@@ -9,8 +9,10 @@ import numpy as np
 from data import dataset
 from data import db_connector as database
 from chart import chart_mpl
+from utils import talib_functions
 
 st.write("# This is the market screener")
+
 
 # Set up sections of web page
 header = st.container()
@@ -20,6 +22,7 @@ result_list = st.container()
 st.sidebar.markdown("# Market Screener")
 # select market
 index_selector = st.sidebar.selectbox('Select index', sorted(dataset.market_index_list), index=0)
+timeframe_selector_mock = st.sidebar.selectbox('Select timeframe', ["4h", "6h", "12h", "1d", "3d", "1w", "1m"], index=0)
 
 
 def get_index_ticker_list(index_ticker_list):
@@ -43,6 +46,12 @@ with header:
         """
         )
 
+
+def get_talib_functions_format_list(nested_dict):
+    list_ = list(nested_dict.values())
+    return list(map(lambda x: list(x.keys())[0], list_))
+
+
 with screen_settings:
     with st.expander("Fundamental options"):
         st.write("TBD")
@@ -51,12 +60,8 @@ with screen_settings:
         keyWords = st_tags(
             label='# Entry Strategy:',
             text='Press enter to add more',
-            value=['<ema-20', 'close<ema-20', 'close>ema-50', 'low>lowerbb', 'close<234', 'sma-200upturn',
-                   'sma-200downturn',
-                   'sma-20'
-                   '<sma-50'],
-            suggestions=['<ema-20', 'close<ema-20', 'close>ema-50', 'low>lowerbb', 'close<234', 'sma-200upturn',
-                         'sma-200downturn', 'sma-20<sma-50'],
+            value=['<ema(20,10)', 'close<ema(20)', 'close>ema(50)', 'low>lowerbb', 'sma(30,30)<sma(1)'],
+            suggestions=get_talib_functions_format_list(talib_functions.overlap_studies_functions) + list(talib_functions.overlap_studies.keys()),
             maxtags=50,
             key="entry_stategy")
 
@@ -70,12 +75,22 @@ with screen_settings:
 # ind - oper - val,
 # ind - oper - bool
 
+def check_format(entry_strategy_query_list, keywords):
+    for query_list, query_string in zip(entry_strategy_query_list, keywords):
+        if operator(query_list[0]):
+            st.write(
+                f"Format error: '{query_string}' ignored!")
+            st.write("Begin with price type ('close' or 'low' etc.) or indicator type ('ema(20)', cci(50)")
+            keywords.remove(query_string)
+            entry_strategy_query_list.remove(query_list)
+
+
 def strategy_list(keywords):
     # parse logic
     entry_strategy_query_list = []
     i = 0
     for key in keywords:
-        key = re.split('(<|>|=|-|upturn|downturn)', key)
+        key = re.split('(<|>|=)', key)
         key = list(filter(None, key))
         entry_strategy_query_list.append(key)
     return entry_strategy_query_list
@@ -91,15 +106,15 @@ def price(key: str) -> bool:
 
 def operator(key: str) -> bool:
     found = False
-    for operator in ['<', '>', '=', '-', '_']:
+    for operator in ['<', '>', '=']:
         if key.find(operator) != -1:
             found = True
             break
     return found
 
 
-def value(key: str) -> bool:
-    if key.isdigit():
+def argument_list(key: str) -> bool:
+    if '(' and ')' in key:
         return True
     else:
         return False
@@ -108,10 +123,27 @@ def value(key: str) -> bool:
 def indicator(key: str) -> bool:
     if not price(key):
         if not operator(key):
-            if not value(key):
-                return True
-            else:
-                return False
+            return True
+        else:
+            return False
+
+
+def parse_etry_query_to_dict_list(entry_strategy_query_list):
+    condition_list = []
+    for entry_list in entry_strategy_query_list:
+        condition_dict = dict()
+        for item in entry_list:
+            if price(item):
+                condition_dict["price"] = item
+            if operator(item):
+                condition_dict["operator"] = item
+            if indicator(item):
+                if not "indicator1" in condition_dict:
+                    condition_dict["indicator1"] = item
+                else:
+                    condition_dict["indicator2"] = item
+        condition_list.append(condition_dict)
+    return condition_list
 
 
 def compute_talib_function(ohlcv_dataframe, talib_function_name, talib_function_args):
@@ -129,45 +161,24 @@ def compute_talib_function(ohlcv_dataframe, talib_function_name, talib_function_
     return ohlcv_dataframe
 
 
-def get_tickers_indicators_dataframe_list(entry_strategy_query_list, index_ticker_list, start_date, end_date):
+def get_tickers_indicators_dataframe_list(strategy_dict, index_ticker_list, start_date, end_date):
     tickers_indicators_dataframe_list = []
     # TODO: delete, because of development reduced to 5 dataframes
-    index_ticker_list = index_ticker_list[0:50]
-    # TODO: Remove debug string when finished
-    debug_string = ""
-    # ------------------------------------------------------------
+    index_ticker_list = index_ticker_list[0:5]
+
     for i, ticker in enumerate(index_ticker_list):
-        debug_string = debug_string + "Ticker: " + ticker + ", \n"
-        # (1) reduce index_ticker_list by conditions and add indicators to dataframe:
-        for entry_list in entry_strategy_query_list:
-            debug_string = debug_string + "Condition: " + str(entry_list) + "\n"
-            for item in entry_list:
-                if price(item):
-                    debug_string = debug_string + "*  Price: " + item + "\n"
-                if operator(item):
-                    debug_string = debug_string + "*  Operator: " + item + "\n"
-                if indicator(item):
-                    debug_string = debug_string + "*  Indicator: " + item + "\n"
-                if value(item):
-                    debug_string = debug_string + "*  Value: " + item + "\n"
-        # TODO: Workaround because (1) no yet implemented
-        # Fetch data from database
+        # Fetch data from database:
         hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
         hlocv_dataframe.symbol = str(ticker)
+        hlocv_dataframe.company = ""
+        hlocv_dataframe.pair = "USD"
+        for element in strategy_dict:
+            # TODO: execute talib functions on hlocv_dataframe based on strategy dict
+            #  Break if strategy condition is False
+            #  If False, drop hlocv_dataframe and continue
+            pass
         tickers_indicators_dataframe_list.append(hlocv_dataframe)
-        # ------------------------------------------------
-        debug_string = debug_string + "---------------------" + "\n"
-    return tickers_indicators_dataframe_list, debug_string
-
-
-def check_format(entry_strategy_query_list, keywords):
-    for query_list, query_string in zip(entry_strategy_query_list, keywords):
-        if operator(query_list[0]):
-            st.write(
-                f"Format error: '{query_string}' ignored!")
-            st.write("Begin with price type ('close' or 'low' etc.) or indicator type ('ema-20', cci-50)")
-            keywords.remove(query_string)
-            entry_strategy_query_list.remove(query_list)
+    return tickers_indicators_dataframe_list
 
 
 def plot_chart(ticker_indicators_dataframe):
@@ -187,13 +198,14 @@ with st.expander("Format Check:"):
 with st.expander("List:"):
     st.write(keyWords)
 with st.expander("Parsed:"):
-    st.write(entryStrategyQueryList)
+    condition_list = parse_etry_query_to_dict_list(entryStrategyQueryList)
+    st.write(condition_list)
 
 tickersIndicatorsDataframeList = []
 debugString = ""
 if st.checkbox("Run screener"):
     with st.spinner('Screening the market ..'):
-        tickersIndicatorsDataframeList, debugString = get_tickers_indicators_dataframe_list(entryStrategyQueryList,
+        tickersIndicatorsDataframeList, debugString = get_tickers_indicators_dataframe_list(strategy_dict,
                                                                                             get_index_ticker_list(
                                                                                                 index_selector),
                                                                                             start_date,
@@ -213,41 +225,6 @@ if st.checkbox("Run screener"):
             st.pyplot(figure)
             if st.button("trade", key="trade_" + str(i)):
                 st.write("Trading journal entry pop up")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 fundamental_values = '''
 P/E	
