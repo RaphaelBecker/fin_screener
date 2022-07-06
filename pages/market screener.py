@@ -1,5 +1,6 @@
 import datetime
 import time
+from dataclasses import dataclass
 
 import streamlit as st
 import talib
@@ -10,6 +11,17 @@ from data import dataset
 from data import db_connector as database
 from chart import chart_mpl
 from utils import talib_functions
+
+
+@dataclass
+class Condition:
+    price: str = None
+    operator: str = None
+    indicator1: str = None
+    indicator1_args: list = None
+    indicator2: str = None
+    indicator2_args: list = None
+
 
 st.write("# Market Screener")
 
@@ -43,7 +55,8 @@ def get_talib_functions_format_list(nested_dict):
 with st.expander("Fundamental options"):
     st.write("TBD")
 
-option = st.selectbox('All available technical indicators:', ['search function'] + get_talib_functions_format_list(talib_functions.overlap_studies_functions))
+option = st.selectbox('All available technical indicators:',
+                      ['search function'] + get_talib_functions_format_list(talib_functions.overlap_studies_functions))
 if 'search function' not in option:
     st.write(option)
 keyWords = st.text_input('Entry Strategy', value='ema(20)<sma(50) AND close<sma(20) AND close>sma(50)')
@@ -52,7 +65,6 @@ if " AND " in keyWords:
     keyWords = keyWords.split(" AND ")
 else:
     keyWords = [keyWords]
-
 
 
 # QUERY PARSER:
@@ -116,21 +128,39 @@ def indicator(key: str) -> bool:
             return False
 
 
-def parse_etry_query_to_dict_list(entry_strategy_query_list):
+def parse_etry_query_to_condition_dataclass_list(entry_strategy_query_list):
     condition_list = []
     for entry_list in entry_strategy_query_list:
-        condition_dict = dict()
+        condition = Condition()
         for item in entry_list:
             if price(item):
-                condition_dict["price"] = item
+                condition.price = item
             if operator(item):
-                condition_dict["operator"] = item
+                condition.operator = item
             if indicator(item):
-                if not "indicator1" in condition_dict:
-                    condition_dict["indicator1"] = item
+                if not condition.indicator1:
+                    if "(" in item:
+                        item = item.replace(")", "")
+                        arguments = item.split("(")[1]
+                        if "," in arguments:
+                            argument_list = arguments.split(",")
+                            condition.indicator1_args = argument_list
+                        else:
+                            condition.indicator1_args = int(arguments)
+                    else: # no argument indicator
+                        condition.indicator1 = item
                 else:
-                    condition_dict["indicator2"] = item
-        condition_list.append(condition_dict)
+                    if "(" in item:
+                        item = item.replace(")", "")
+                        arguments = item.split("(")[1]
+                        if "," in arguments:
+                            argument_list = arguments.split(",")
+                            condition.indicator2_args = argument_list
+                        else:
+                            condition.indicator2_args = int(arguments)
+                    else: # no argument indicator
+                        condition.indicator2 = item
+        condition_list.append(condition)
     return condition_list
 
 
@@ -149,7 +179,7 @@ def compute_talib_function(ohlcv_dataframe, talib_function_name, talib_function_
     return ohlcv_dataframe
 
 
-def get_tickers_indicators_dataframe_list(strategy_dict, index_ticker_list, start_date, end_date):
+def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list, start_date, end_date):
     tickers_indicators_dataframe_list = []
     # TODO: delete, because of development reduced to 5 dataframes
     index_ticker_list = index_ticker_list[0:5]
@@ -160,15 +190,8 @@ def get_tickers_indicators_dataframe_list(strategy_dict, index_ticker_list, star
         hlocv_dataframe.symbol = str(ticker)
         hlocv_dataframe.company = ""
         hlocv_dataframe.pair = "USD"
-        for element in strategy_dict:
-            if "operator" in element.keys():
-                st.write(element["operator"])
-            if "price" in element.keys():
-                st.write(element["price"])
-            if "indicator1" in element.keys():
-                st.write(element["indicator1"])
-            if "indicator2" in element.keys():
-                st.write(element["indicator2"])
+        for condition in cond_dataclass_list:
+            st.write(condition)
             st.write('------------------')
             # TODO: execute talib functions on hlocv_dataframe based on strategy dict
             #  Break if strategy condition is False
@@ -194,18 +217,18 @@ with st.expander("Format Check:"):
 with st.expander("List:"):
     st.write(keyWords)
 with st.expander("Parsed:"):
-    strategy_dict = parse_etry_query_to_dict_list(entryStrategyQueryList)
-    st.write(strategy_dict)
+    condition_dataclass_list = parse_etry_query_to_condition_dataclass_list(entryStrategyQueryList)
+    st.write(condition_dataclass_list)
 
 tickersIndicatorsDataframeList = []
 debugString = ""
 if st.checkbox("Run screener"):
     with st.spinner('Screening the market ..'):
-        tickersIndicatorsDataframeList = get_tickers_indicators_dataframe_list(strategy_dict,
-                                                                                            get_index_ticker_list(
-                                                                                                index_selector),
-                                                                                            start_date,
-                                                                                            end_date)
+        tickersIndicatorsDataframeList = get_tickers_indicators_dataframe_list(condition_dataclass_list,
+                                                                               get_index_ticker_list(
+                                                                                   index_selector),
+                                                                               start_date,
+                                                                               end_date)
     st.success('Screened the market!')
 
     if st.checkbox("show debug logs"):

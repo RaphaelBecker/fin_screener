@@ -16,7 +16,7 @@ def is_support(df, i):
 def is_resistance(df, i):
     resistance = False
     try:
-        resistance = df['high'][i] > df['close'][i - 1] > df['close'][i - 2] > df['close'][i - 3]  and df['high'][i] > df['close'][i + 1] > \
+        resistance = df['high'][i] > df['close'][i - 1] > df['close'][i - 2] > df['close'][i - 3] and df['high'][i] > df['close'][i + 1] > \
                      df['close'][i + 2] > df['close'][i + 3]
     except IndexError:
         pass
