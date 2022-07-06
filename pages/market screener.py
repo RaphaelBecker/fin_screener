@@ -11,8 +11,10 @@ from data import db_connector as database
 from chart import chart_mpl
 from utils import talib_functions
 
-st.write("# This is the market screener")
+st.write("# Market Screener")
 
+if "words" not in st.session_state:
+    st.session_state.words = []
 
 # Set up sections of web page
 header = st.container()
@@ -33,41 +35,27 @@ def get_index_ticker_list(index_ticker_list):
     return index_ticker_list
 
 
-with header:
-    with st.expander("Available commands and indicators"):
-        st.markdown(
-            """
-        TODO: Show available commands and indicators here
-        
-        Fundamental indicators:
-        ....
-        Technical Indicators:
-        ....
-        """
-        )
-
-
 def get_talib_functions_format_list(nested_dict):
     list_ = list(nested_dict.values())
     return list(map(lambda x: list(x.keys())[0], list_))
 
 
-with screen_settings:
-    with st.expander("Fundamental options"):
-        st.write("TBD")
+with st.expander("Fundamental options"):
+    st.write("TBD")
 
-    with st.expander("Technical options"):
-        keyWords = st_tags(
-            label='# Entry Strategy:',
-            text='Press enter to add more',
-            value=['<ema(20,10)', 'close<ema(20)', 'close>ema(50)', 'low>lowerbb', 'sma(30,30)<sma(1)'],
-            suggestions=get_talib_functions_format_list(talib_functions.overlap_studies_functions) + list(talib_functions.overlap_studies.keys()),
-            maxtags=50,
-            key="entry_stategy")
+option = st.selectbox('All available technical indicators:', ['search function'] + get_talib_functions_format_list(talib_functions.overlap_studies_functions))
+if 'search function' not in option:
+    st.write(option)
+keyWords = st.text_input('Entry Strategy', value='ema(20)<sma(50) AND close<sma(20) AND close>sma(50)')
+keyWords = keyWords.strip()
+if " AND " in keyWords:
+    keyWords = keyWords.split(" AND ")
+else:
+    keyWords = [keyWords]
+
 
 
 # QUERY PARSER:
-
 ## possible boolean operations in keys:
 # price - oper - ind,
 # price - oper - val,
@@ -173,10 +161,18 @@ def get_tickers_indicators_dataframe_list(strategy_dict, index_ticker_list, star
         hlocv_dataframe.company = ""
         hlocv_dataframe.pair = "USD"
         for element in strategy_dict:
+            if "operator" in element.keys():
+                st.write(element["operator"])
+            if "price" in element.keys():
+                st.write(element["price"])
+            if "indicator1" in element.keys():
+                st.write(element["indicator1"])
+            if "indicator2" in element.keys():
+                st.write(element["indicator2"])
+            st.write('------------------')
             # TODO: execute talib functions on hlocv_dataframe based on strategy dict
             #  Break if strategy condition is False
             #  If False, drop hlocv_dataframe and continue
-            pass
         tickers_indicators_dataframe_list.append(hlocv_dataframe)
     return tickers_indicators_dataframe_list
 
@@ -198,14 +194,14 @@ with st.expander("Format Check:"):
 with st.expander("List:"):
     st.write(keyWords)
 with st.expander("Parsed:"):
-    condition_list = parse_etry_query_to_dict_list(entryStrategyQueryList)
-    st.write(condition_list)
+    strategy_dict = parse_etry_query_to_dict_list(entryStrategyQueryList)
+    st.write(strategy_dict)
 
 tickersIndicatorsDataframeList = []
 debugString = ""
 if st.checkbox("Run screener"):
     with st.spinner('Screening the market ..'):
-        tickersIndicatorsDataframeList, debugString = get_tickers_indicators_dataframe_list(strategy_dict,
+        tickersIndicatorsDataframeList = get_tickers_indicators_dataframe_list(strategy_dict,
                                                                                             get_index_ticker_list(
                                                                                                 index_selector),
                                                                                             start_date,
