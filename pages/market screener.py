@@ -216,6 +216,8 @@ with st.expander("Format Check:"):
     check_format(entryStrategyQueryList, keyWords)
 with st.expander("List:"):
     st.write(keyWords)
+with st.expander("entryStrategyQueryList:"):
+    st.write(entryStrategyQueryList)
 with st.expander("Parsed:"):
     condition_dataclass_list = parse_etry_query_to_condition_dataclass_list(entryStrategyQueryList)
     st.write(condition_dataclass_list)

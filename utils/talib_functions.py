@@ -188,7 +188,23 @@ math_operators = {
 
 overlap_studies_functions = {
     'BBANDS': {"BBANDS(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)": ["upperband", "middleband", "lowerband"]},
-    'EMA': {"EMA(close, timeperiod=30)": "ema"}
+    'EMA': {"EMA(close, timeperiod=30)": "ema"},
+    "DEMA": {"DEMA(close, timeperiod=30)": "dema"},
+    "EMA": {"EMA(close, timeperiod=30)": "ema"},
+    "HT_TRENDLINE": {"HT_TRENDLINE(close)": "ht_trendline"},
+    "KAMA": {"KAMA(close, timeperiod=30)": "kama"},
+    "MA": {"MA(close, timeperiod=30, matype=0)": "ma"},
+    "MAMA": {"MAMA(close, fastlimit=0, slowlimit=0)": ["mama", "fama"]},
+    "MAVP": {"MAVP(close, periods, minperiod=2, maxperiod=30, matype=0)": "mavp"},
+    "MIDPOINT": {"MIDPOINT(close, timeperiod=14)": "midpoint"},
+    "MIDPRICE": {"MIDPRICE(high, low, timeperiod=14)": "midprice"},
+    "SAR": {"SAR(high, low, acceleration=0, maximum=0)": "sar"},
+    "SAREXT": {
+        "SAREXT(high, low, startvalue=0, offsetonreverse=0, accelerationinitlong=0, accelerationlong=0, "
+        "accelerationmaxlong=0, accelerationinitshort=0, accelerationshort=0, accelerationmaxshort=0)": "sarext"},
+    "SMA": {"SMA(close, timeperiod=30)": "sma"},
+    "T3": {"T3(close, timeperiod=5, vfactor=0)": "t3"},
+    "TEMA": {"TEMA(close, timeperiod=30)": "tema"},
+    "TRIMA": {"TRIMA(close, timeperiod=30)": "trima"},
+    "WMA": {"WMA(close, timeperiod=30)": "wma"}
 }
-
-
