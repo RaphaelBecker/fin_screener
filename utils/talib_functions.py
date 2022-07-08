@@ -190,7 +190,6 @@ overlap_studies_functions = {
     'BBANDS': {"BBANDS(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)": ["upperband", "middleband", "lowerband"]},
     'EMA': {"EMA(close, timeperiod=30)": "ema"},
     "DEMA": {"DEMA(close, timeperiod=30)": "dema"},
-    "EMA": {"EMA(close, timeperiod=30)": "ema"},
     "HT_TRENDLINE": {"HT_TRENDLINE(close)": "ht_trendline"},
     "KAMA": {"KAMA(close, timeperiod=30)": "kama"},
     "MA": {"MA(close, timeperiod=30, matype=0)": "ma"},

@@ -2,11 +2,55 @@ import matplotlib.pyplot as plt
 import pandas
 from mplfinance.original_flavor import candlestick_ohlc
 from matplotlib.pylab import date2num
+import utils.talib_functions as talib_funcs
+
+
+def overlap_studies(ohlcvind_ticker_dataframe: pandas.DataFrame):
+    columns = ohlcvind_ticker_dataframe.columns
+    list_ = list(talib_funcs.overlap_studies_functions.keys())
+    return set(columns).intersection(list_) # keep matchings values
+
+
+def momentum_indicators():
+    pass
+
+
+def volume_indicators():
+    pass
+
+
+def volatility_indicators():
+    pass
+
+
+def price_transform():
+    pass
+
+
+def cycle_indicators():
+    pass
+
+
+def pattern_recognition():
+    pass
+
+
+def statistic_functions():
+    pass
+
+
+def math_transform():
+    pass
+
+
+def math_operators():
+    pass
 
 
 def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     if ohlcvind_ticker_dataframe.symbol:
-        title_string = "Symbol: " + ohlcvind_ticker_dataframe.symbol + ", last: " + str(ohlcvind_ticker_dataframe.tail(1).index.item().date())
+        title_string = "Symbol: " + ohlcvind_ticker_dataframe.symbol + ", last: " + str(
+            ohlcvind_ticker_dataframe.tail(1).index.item().date())
     else:
         title_string = "title not available"
 
@@ -35,8 +79,14 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     candlestick_ohlc(ax_candle, ohlc, colorup="g", colordown="r", width=bar_width)
     ylable_text = 'USD'
     ax_candle.set_ylabel(ylable_text, size=10)
-    ax_candle.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
 
+    # plot overlap studies:
+    for overlap_study in overlap_studies(ohlcvind_ticker_dataframe):
+        ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[overlap_study],
+                   alpha=0.65,
+                   label=overlap_study, color='green')
+
+    ax_candle.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
     ax_candle.get_legend().set_title("legend")
 
     # add price at last candle:

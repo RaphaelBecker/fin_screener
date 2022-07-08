@@ -168,21 +168,6 @@ def parse_etry_query_to_condition_dataclass_list(entry_strategy_query_list):
     return condition_list
 
 
-def compute_talib_function(ohlcv_dataframe, talib_function_name, talib_function_args):
-    print('Executing talib function: ' + talib_function_name + '(' + talib_function_args + ')')
-    talib_function = getattr(talib, talib_function_name)
-    ohlcv_dataframe[talib_function_name] = np.nan
-    try:
-        # TODO Mapping, how to built function argument list dynamically???
-        result = talib_function(ohlcv_dataframe['open'], ohlcv_dataframe['high'], ohlcv_dataframe['low'],
-                                ohlcv_dataframe['close'])
-        ohlcv_dataframe[talib_function_name] = result.to_frame().replace(0, np.nan).replace(100, 1)
-    except IndexError:
-        print('IndexError!')
-        pass
-    return ohlcv_dataframe
-
-
 def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list, start_date, end_date):
     tickers_indicators_dataframe_list = []
     # TODO: delete, because of development reduced to 5 dataframes
@@ -197,6 +182,19 @@ def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list
         st.write(ticker)
         for condition in cond_dataclass_list:
             st.write(condition)
+            if condition.price:
+                function = condition.indicator1
+                func_args = condition.indicator1_args
+                talib_function = getattr(talib, function)
+                hlocv_dataframe[function] = np.nan
+                try:
+                    if func_args:
+                        result = talib_function(hlocv_dataframe['close'], func_args)
+                    else:
+                        result = talib_function(hlocv_dataframe['close'])
+                    hlocv_dataframe[function] = result.to_frame().replace(0, np.nan).replace(100, 1)
+                except IndexError as e:
+                    print(f"IndexError: {e}")
             st.write('------------------')
             # TODO: execute talib functions on hlocv_dataframe based on strategy dict
             #  Break if strategy condition is False

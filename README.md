@@ -11,6 +11,9 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
  * run `setup.bat` (windows)
  * download TA-lib wheels file from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib
  * and install the downloaded file by ```pip install "path_to\TA-lib-file.wh"```
+ * in a python shell inside venv, run: 
+   * >>> import nltk
+   * >>> nltk.download()
 
 ### run
  * open cmd in project root
