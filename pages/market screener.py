@@ -194,6 +194,7 @@ def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list
         hlocv_dataframe.symbol = str(ticker)
         hlocv_dataframe.company = ""
         hlocv_dataframe.pair = "USD"
+        st.write(ticker)
         for condition in cond_dataclass_list:
             st.write(condition)
             st.write('------------------')
