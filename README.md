@@ -12,8 +12,8 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
  * download TA-lib wheels file from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib
  * and install the downloaded file by ```pip install "path_to\TA-lib-file.wh"```
  * in a python shell inside venv, run: 
-   * >>> import nltk
-   * >>> nltk.download()
+   * `>>> import nltk`
+   * `>>> nltk.download()`
 
 ### run
  * open cmd in project root
@@ -47,3 +47,12 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
    * https://stackoverflow.com/questions/69492406/streamlit-how-to-display-buttons-in-a-single-line
  * Good sw architecture in streamlit:
    * https://github.com/adenhaus/f1-data-viz
+
+### Paid integrations:
+#### Sentiment analysis:
+* Socialsentiment.io
+* swaggystocks.com
+* quiverquant.com
+* social-searcher.com
+#### Stock APIs:
+* Polygon
