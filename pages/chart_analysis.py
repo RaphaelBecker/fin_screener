@@ -120,7 +120,11 @@ if st.checkbox("Show News Sentiment Analysis:"):
         dataframe = dataframe.drop(columns=['Headline'])
         st.write('\n')
         dataframe = dataframe.set_index("Date")
-        st.line_chart(dataframe["compound"])
+        table_dataframe = dataframe
+        dataframe["zero"] = 0
+        st.line_chart(dataframe[["compound", "zero"]])
+        if st.checkbox("show raw"):
+            st.table(table_dataframe.head())
 
         mean = round(dataframe['compound'].mean(), 2)
         values.append(mean)
@@ -128,23 +132,25 @@ if st.checkbox("Show News Sentiment Analysis:"):
     df = pd.DataFrame(list(zip(tickers, values)), columns=['Ticker', 'Mean Sentiment'])
     df = df.set_index('Ticker')
     df = df.sort_values('Mean Sentiment', ascending=False)
-    st.write('\n')
-    st.table(df)
+    col1, col2 = st.columns([4,1])
+    col2.metric(label="Mean sentiment", value=str(df["Mean Sentiment"].values), delta="")
 
     try:
         for ticker in tickers:
             df = news_tables[ticker]
             df_tr = df.findAll('tr')
 
-            st.write('\n')
-            st.subheader('Recent News Headlines for {}: '.format(ticker))
+            col1.subheader('Recent News Headlines for {}: '.format(ticker))
 
+            headlines = []
             for i, table_row in enumerate(df_tr):
                 a_text = table_row.a.text
                 td_text = table_row.td.text
                 td_text = td_text.strip()
-                st.write(" * " + a_text, '(', td_text, ')')
+                headlines.append(f" *  {a_text} ({td_text})")
                 if i == n - 1:
                     break
+            for line in headlines:
+                col1.write(line)
     except KeyError:
         pass
