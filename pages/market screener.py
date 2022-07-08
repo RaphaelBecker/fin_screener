@@ -142,22 +142,26 @@ def parse_etry_query_to_condition_dataclass_list(entry_strategy_query_list):
                     if "(" in item:
                         item = item.replace(")", "")
                         arguments = item.split("(")[1]
+                        condition.indicator1 = item.split("(")[0]
                         if "," in arguments:
                             argument_list = arguments.split(",")
-                            condition.indicator1_args = argument_list
+                            condition.indicator1_args = list(map(lambda x: int(x), argument_list))
                         else:
-                            condition.indicator1_args = int(arguments)
+                            if arguments:
+                                condition.indicator1_args = int(arguments)
                     else: # no argument indicator
                         condition.indicator1 = item
                 else:
                     if "(" in item:
                         item = item.replace(")", "")
                         arguments = item.split("(")[1]
+                        condition.indicator2 = item.split("(")[0]
                         if "," in arguments:
                             argument_list = arguments.split(",")
-                            condition.indicator2_args = argument_list
+                            condition.indicator2_args = list(map(lambda x: int(x), argument_list))
                         else:
-                            condition.indicator2_args = int(arguments)
+                            if arguments:
+                                condition.indicator2_args = int(arguments)
                     else: # no argument indicator
                         condition.indicator2 = item
         condition_list.append(condition)
