@@ -59,7 +59,7 @@ option = st.selectbox('All available technical indicators:',
                       ['search function'] + get_talib_functions_format_list(talib_functions.overlap_studies_functions))
 if 'search function' not in option:
     st.write(option)
-keyWords = st.text_input('Entry Strategy', value='ema(20)<sma(50) AND close<sma(20) AND close>sma(50)')
+keyWords = st.text_input('Entry Strategy', value='close>SMA(20) AND close>MIDPOINT(200)')
 keyWords = keyWords.strip()
 if " AND " in keyWords:
     keyWords = keyWords.split(" AND ")
@@ -144,12 +144,12 @@ def parse_etry_query_to_condition_dataclass_list(entry_strategy_query_list):
                         arguments = item.split("(")[1]
                         condition.indicator1 = item.split("(")[0]
                         if "," in arguments:
-                            argument_list = arguments.split(",")
-                            condition.indicator1_args = list(map(lambda x: int(x), argument_list))
+                            args_list = arguments.split(",")
+                            condition.indicator1_args = list(map(lambda x: int(x), args_list))
                         else:
                             if arguments:
                                 condition.indicator1_args = int(arguments)
-                    else: # no argument indicator
+                    else:  # no argument indicator
                         condition.indicator1 = item
                 else:
                     if "(" in item:
@@ -157,21 +157,62 @@ def parse_etry_query_to_condition_dataclass_list(entry_strategy_query_list):
                         arguments = item.split("(")[1]
                         condition.indicator2 = item.split("(")[0]
                         if "," in arguments:
-                            argument_list = arguments.split(",")
-                            condition.indicator2_args = list(map(lambda x: int(x), argument_list))
+                            args_list = arguments.split(",")
+                            condition.indicator2_args = list(map(lambda x: int(x), args_list))
                         else:
                             if arguments:
                                 condition.indicator2_args = int(arguments)
-                    else: # no argument indicator
+                    else:  # no argument indicator
                         condition.indicator2 = item
         condition_list.append(condition)
     return condition_list
 
 
+@st.cache(allow_output_mutation=True)
+def price_indicator_comparison(condition, hlocv_dataframe):
+    function_talib = condition.indicator1
+    func_args = condition.indicator1_args
+    function_col_name = function_talib
+    if type(func_args) == list:
+        for arg in func_args:
+            function_col_name = function_col_name + "_" + str(arg)
+    else:
+        function_col_name = function_col_name + "_" + str(func_args)
+    talib_function = getattr(talib, function_talib)
+    hlocv_dataframe[function_col_name] = np.nan
+    try:
+        if func_args:
+            result = talib_function(hlocv_dataframe['close'], func_args)
+        else:
+            result = talib_function(hlocv_dataframe['close'])
+        hlocv_dataframe[function_col_name] = result.to_frame().replace(0, np.nan).replace(100, 1)
+    except IndexError as e:
+        print(f"IndexError: {e}")
+    keep = False
+    if condition.operator == "<":
+        keep = float(hlocv_dataframe[condition.price].tail(1).values[0]) < float(
+            hlocv_dataframe[function_col_name].tail(1).values[0])
+        # st.write(f"{hlocv_dataframe[condition.price].tail(1).values[0]} < {hlocv_dataframe[function_col_name].tail(1).values[0]} -> {keep}")
+    elif condition.operator == ">":
+        keep = float(hlocv_dataframe[condition.price].tail(1).values[0]) > float(
+            hlocv_dataframe[function_col_name].tail(1).values[0])
+        # st.write(f"{hlocv_dataframe[condition.price].tail(1).values[0]} > {hlocv_dataframe[function_col_name].tail(1).values[0]} -> {keep}")
+
+    return hlocv_dataframe, keep
+
+
+def indicator_indicator_comparison():
+    pass
+
+
+def custom_indicator():
+    pass
+
+
 def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list, start_date, end_date):
     tickers_indicators_dataframe_list = []
     # TODO: delete, because of development reduced to 5 dataframes
-    index_ticker_list = index_ticker_list[0:5]
+    index_ticker_list = index_ticker_list
 
     for i, ticker in enumerate(index_ticker_list):
         # Fetch data from database:
@@ -179,27 +220,16 @@ def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list
         hlocv_dataframe.symbol = str(ticker)
         hlocv_dataframe.company = ""
         hlocv_dataframe.pair = "USD"
-        st.write(ticker)
+        # st.write(str(ticker))
+        final_hlocv_dataframe = hlocv_dataframe
+        keep = False
         for condition in cond_dataclass_list:
-            st.write(condition)
             if condition.price:
-                function = condition.indicator1
-                func_args = condition.indicator1_args
-                talib_function = getattr(talib, function)
-                hlocv_dataframe[function] = np.nan
-                try:
-                    if func_args:
-                        result = talib_function(hlocv_dataframe['close'], func_args)
-                    else:
-                        result = talib_function(hlocv_dataframe['close'])
-                    hlocv_dataframe[function] = result.to_frame().replace(0, np.nan).replace(100, 1)
-                except IndexError as e:
-                    print(f"IndexError: {e}")
-            st.write('------------------')
-            # TODO: execute talib functions on hlocv_dataframe based on strategy dict
-            #  Break if strategy condition is False
-            #  If False, drop hlocv_dataframe and continue
-        tickers_indicators_dataframe_list.append(hlocv_dataframe)
+                final_hlocv_dataframe, keep = price_indicator_comparison(condition, final_hlocv_dataframe)
+                if not keep:
+                    break
+        if keep:
+            tickers_indicators_dataframe_list.append(final_hlocv_dataframe)
     return tickers_indicators_dataframe_list
 
 
@@ -217,10 +247,6 @@ entryStrategyQueryList = strategy_list(keyWords)
 
 with st.expander("Format Check:"):
     check_format(entryStrategyQueryList, keyWords)
-with st.expander("List:"):
-    st.write(keyWords)
-with st.expander("entryStrategyQueryList:"):
-    st.write(entryStrategyQueryList)
 with st.expander("Parsed:"):
     condition_dataclass_list = parse_etry_query_to_condition_dataclass_list(entryStrategyQueryList)
     st.write(condition_dataclass_list)
@@ -234,7 +260,8 @@ if st.checkbox("Run screener"):
                                                                                    index_selector),
                                                                                start_date,
                                                                                end_date)
-    st.success('Screened the market!')
+    st.success(
+        f"Screened the market! Found {len(tickersIndicatorsDataframeList)} out of {len(get_index_ticker_list(index_selector))}")
 
     if st.checkbox("show debug logs"):
         st.write(debugString)
@@ -247,8 +274,6 @@ if st.checkbox("Run screener"):
         for i, dataframe in enumerate(tickersIndicatorsDataframeList):
             figure = plot_chart(dataframe)
             st.pyplot(figure)
-            if st.button("trade", key="trade_" + str(i)):
-                st.write("Trading journal entry pop up")
 
 fundamental_values = '''
 P/E	

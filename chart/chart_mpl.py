@@ -7,8 +7,15 @@ import utils.talib_functions as talib_funcs
 
 def overlap_studies(ohlcvind_ticker_dataframe: pandas.DataFrame):
     columns = ohlcvind_ticker_dataframe.columns
+    columns_compare = list(map(lambda col: col.split("_", 1)[0], columns))
     list_ = list(talib_funcs.overlap_studies_functions.keys())
-    return set(columns).intersection(list_) # keep matchings values
+    matches = set(columns_compare).intersection(list_) # keep matchings values
+    plotted_overlap_studies = []
+    for column in columns:
+        for match in matches:
+            if match in column:
+                plotted_overlap_studies.append(column)
+    return plotted_overlap_studies
 
 
 def momentum_indicators():
@@ -83,8 +90,8 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     # plot overlap studies:
     for overlap_study in overlap_studies(ohlcvind_ticker_dataframe):
         ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[overlap_study],
-                   alpha=0.65,
-                   label=overlap_study, color='green')
+                   alpha=0.5,
+                   label=overlap_study)
 
     ax_candle.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
     ax_candle.get_legend().set_title("legend")
