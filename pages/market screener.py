@@ -9,7 +9,34 @@ from data import dataset
 from data import db_connector as database
 from chart import chart_mpl
 from utils import talib_functions
+from indicators import heikin_ashi as heik_ash
 
+fundamental_values = \
+[
+'P/E',
+'Forward P/E',
+'PEG',
+'P/S',
+'P/B',
+'Price/Cash',
+'Price/Free Cash Flow',
+'EPS growth',
+'Sales growth',
+'Return on Assets',
+'Return on Equity',
+'Return on Investment',
+'Current Ratio',
+'Quick Ratio',
+'LT Debt/Equity',
+'Debt/Equity',
+'Gross Margin',
+'Operating Margin',
+'Net Profit Margin',
+'Payout Ratio',
+'Insider Ownership',
+'Insider Transactions',
+'Institutional Ownership'
+]
 
 @dataclass
 class Condition:
@@ -49,14 +76,48 @@ def get_talib_functions_format_list(nested_dict):
     list_ = list(nested_dict.values())
     return list(map(lambda x: list(x.keys())[0], list_))
 
+col_setting1, col_setting2, col_setting3, col_setting4 = st.columns(4)
 
-with st.expander("Fundamental options"):
-    st.write("TBD")
+with col_setting1:
+    heikin_ashi = False
+    if st.checkbox("Heikin Anshi"):
+        heikin_ashi = True
 
-option = st.selectbox('All available technical indicators:',
-                      ['search function'] + get_talib_functions_format_list(talib_functions.overlap_studies_functions))
-if 'search function' not in option:
-    st.write(option)
+with col_setting2:
+    if st.checkbox("placeholder1"):
+        placeholder1 = True
+
+with col_setting3:
+    if st.checkbox("placeholder2"):
+        placeholder2 = True
+
+with col_setting4:
+    if st.checkbox("placeholder3"):
+        placeholder3 = True
+
+col_func1, col_func2, col_func3, col_func4 = st.columns(4)
+
+with col_func1:
+    option = st.selectbox('Overlap studies:',
+                          ['search function'] + get_talib_functions_format_list(
+                              talib_functions.overlap_studies_functions))
+
+
+with col_func2:
+    option = st.selectbox('Momentum Indicators:',
+                          ['search Momentum'])
+
+
+with col_func3:
+    option = st.selectbox('Volume Indicators:',
+                          ['search Volume'])
+
+with col_func4:
+    option = st.selectbox('Fundamentals Indicators:',
+                          ['search fundamentals'] + fundamental_values)
+
+
+
 keyWords = st.text_input('Entry Strategy', value='close>SMA(20) AND close>MIDPOINT(200)')
 keyWords = keyWords.strip()
 if " AND " in keyWords:
@@ -76,7 +137,7 @@ else:
 def check_format(entry_strategy_query_list, keywords):
     for query_list, query_string in zip(entry_strategy_query_list, keywords):
         if operator(query_list[0]):
-            st.write(
+            st.warning(
                 f"Format error: '{query_string}' ignored!")
             st.write("Begin with price type ('close' or 'low' etc.) or indicator type ('ema(20)', cci(50)")
             keywords.remove(query_string)
@@ -238,6 +299,8 @@ def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list
     for i, ticker in enumerate(index_ticker_list):
         # Fetch data from database:
         hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
+        if heikin_ashi:
+            hlocv_dataframe = heik_ash.heikin_ashi(hlocv_dataframe)
         hlocv_dataframe.symbol = str(ticker)
         hlocv_dataframe.company = ""
         hlocv_dataframe.pair = "USD"
@@ -276,8 +339,8 @@ with st.expander("Parsed:"):
     condition_dataclass_list = parse_etry_query_to_condition_dataclass_list(entryStrategyQueryList)
     st.write(condition_dataclass_list)
 
+
 tickersIndicatorsDataframeList = []
-debugString = ""
 if st.checkbox("Run screener"):
     with st.spinner('Screening the market ..'):
         tickersIndicatorsDataframeList = get_tickers_indicators_dataframe_list(condition_dataclass_list,
@@ -288,40 +351,15 @@ if st.checkbox("Run screener"):
     st.success(
         f"Screened the market! Found {len(tickersIndicatorsDataframeList)} out of {len(get_index_ticker_list(index_selector))}")
 
-    if st.checkbox("show debug logs"):
-        st.write(debugString)
 
-    if st.checkbox("show raw dataframe"):
-        for dataframe in tickersIndicatorsDataframeList:
-            st.dataframe(dataframe)
+    with st.expander("Dataframes"):
+        if len(tickersIndicatorsDataframeList) > 0:
+            st.dataframe(tickersIndicatorsDataframeList[0])
+        #for dataframe in tickersIndicatorsDataframeList:
+        #    st.dataframe(dataframe)
 
-    if st.checkbox("plot the dataframes"):
+    with st.expander("PLots"):
         for i, dataframe in enumerate(tickersIndicatorsDataframeList):
             figure = plot_chart(dataframe)
             st.pyplot(figure)
 
-fundamental_values = '''
-P/E	
-Forward P/E	
-PEG	
-P/S	
-P/B	
-Price/Cash	
-Price/Free Cash Flow	
-EPS growth
-Sales growth
-Return on Assets	
-Return on Equity	
-Return on Investment	
-Current Ratio	
-Quick Ratio	
-LT Debt/Equity	
-Debt/Equity	
-Gross Margin	
-Operating Margin	
-Net Profit Margin	
-Payout Ratio	
-Insider Ownership	
-Insider Transactions	
-Institutional Ownership	
-'''

@@ -76,7 +76,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     fig = plt.figure()
 
     # ax_candle = fig.add_axes((0, 0.72, 1, 0.32))
-    ax_candle = fig.add_axes((0, 0.48, 1, 0.63))
+    ax_candle = fig.add_axes((0, 0.40, 1, 0.7))
     ax_candle.tick_params(axis='y', which='both', labelleft=False, labelright=True)
 
     plt.suptitle(title_string, ha='center', y=1.14, fontsize=10)
