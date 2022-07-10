@@ -15,6 +15,9 @@ def overlap_studies(ohlcvind_ticker_dataframe: pandas.DataFrame):
         for match in matches:
             if match in column:
                 plotted_overlap_studies.append(column)
+    if 'HT_TRENDLINE_None' in columns:
+        ohlcvind_ticker_dataframe.rename(columns={'HT_TRENDLINE_None': 'HT_TRENDLINE'}, inplace = True)
+        plotted_overlap_studies.append('HT_TRENDLINE')
     return plotted_overlap_studies
 
 

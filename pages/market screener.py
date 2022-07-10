@@ -90,6 +90,7 @@ def strategy_list(keywords):
     for key in keywords:
         key = re.split('(<|>|=)', key)
         key = list(filter(None, key))
+        key = list(map(lambda element: element.strip(), key))
         entry_strategy_query_list.append(key)
     return entry_strategy_query_list
 
