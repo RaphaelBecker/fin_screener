@@ -1,10 +1,8 @@
 import datetime
-import time
 from dataclasses import dataclass
 
 import streamlit as st
 import talib
-from streamlit_tags import st_tags, st_tags_sidebar
 import re
 import numpy as np
 from data import dataset
@@ -168,26 +166,31 @@ def parse_etry_query_to_condition_dataclass_list(entry_strategy_query_list):
     return condition_list
 
 
-@st.cache(allow_output_mutation=True)
-def price_indicator_comparison(condition, hlocv_dataframe):
-    function_talib = condition.indicator1
-    func_args = condition.indicator1_args
+def compute_talib_function(function_talib, func_args, hlocv_dataframe):
     function_col_name = function_talib
     if type(func_args) == list:
         for arg in func_args:
             function_col_name = function_col_name + "_" + str(arg)
     else:
         function_col_name = function_col_name + "_" + str(func_args)
-    talib_function = getattr(talib, function_talib)
-    hlocv_dataframe[function_col_name] = np.nan
-    try:
-        if func_args:
-            result = talib_function(hlocv_dataframe['close'], func_args)
-        else:
-            result = talib_function(hlocv_dataframe['close'])
-        hlocv_dataframe[function_col_name] = result.to_frame().replace(0, np.nan).replace(100, 1)
-    except IndexError as e:
-        print(f"IndexError: {e}")
+    if function_col_name not in hlocv_dataframe.columns.values:
+        talib_function = getattr(talib, function_talib)
+        hlocv_dataframe[function_col_name] = np.nan
+        try:
+            if func_args:
+                result = talib_function(hlocv_dataframe['close'], func_args)
+            else:
+                result = talib_function(hlocv_dataframe['close'])
+            hlocv_dataframe[function_col_name] = result.to_frame().replace(0, np.nan).replace(100, 1)
+        except IndexError as e:
+            print(f"IndexError: {e}")
+    return hlocv_dataframe, function_col_name
+
+
+def price_indicator_comparison(condition, hlocv_dataframe):
+    function_talib = condition.indicator1
+    func_args = condition.indicator1_args
+    hlocv_dataframe, function_col_name = compute_talib_function(function_talib, func_args, hlocv_dataframe)
     keep = False
     if condition.operator == "<":
         keep = float(hlocv_dataframe[condition.price].tail(1).values[0]) < float(
@@ -201,8 +204,25 @@ def price_indicator_comparison(condition, hlocv_dataframe):
     return hlocv_dataframe, keep
 
 
-def indicator_indicator_comparison():
-    pass
+def indicator1_indicator2_comparison(condition, hlocv_dataframe):
+    function_talib1 = condition.indicator1
+    func_args1 = condition.indicator1_args
+
+    function_talib2 = condition.indicator2
+    func_args2 = condition.indicator2_args
+
+    hlocv_dataframe, function_col_name1 = compute_talib_function(function_talib1, func_args1, hlocv_dataframe)
+    hlocv_dataframe, function_col_name2 = compute_talib_function(function_talib2, func_args2, hlocv_dataframe)
+
+    keep = False
+    if condition.operator == "<":
+        keep = float(hlocv_dataframe[function_col_name1].tail(1).values[0]) < float(
+            hlocv_dataframe[function_col_name2].tail(1).values[0])
+    if condition.operator == ">":
+        keep = float(hlocv_dataframe[function_col_name1].tail(1).values[0]) > float(
+            hlocv_dataframe[function_col_name2].tail(1).values[0])
+
+    return hlocv_dataframe, keep
 
 
 def custom_indicator():
@@ -226,6 +246,10 @@ def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list
         for condition in cond_dataclass_list:
             if condition.price:
                 final_hlocv_dataframe, keep = price_indicator_comparison(condition, final_hlocv_dataframe)
+                if not keep:
+                    break
+            elif condition.indicator1 and condition.indicator2 and not condition.price:
+                final_hlocv_dataframe, keep = indicator1_indicator2_comparison(condition, final_hlocv_dataframe)
                 if not keep:
                     break
         if keep:

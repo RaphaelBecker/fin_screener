@@ -82,7 +82,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     ax_candle.xaxis_date()
 
     # plot candle stick chart:
-    bar_width = (1 / 2.5) * (ohlc[1][0] - ohlc[0][0])
+    bar_width = (1 / 6) * (ohlc[1][0] - ohlc[0][0])
     candlestick_ohlc(ax_candle, ohlc, colorup="g", colordown="r", width=bar_width)
     ylable_text = 'USD'
     ax_candle.set_ylabel(ylable_text, size=10)
