@@ -20,8 +20,14 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
  * run `activate.bat`
  * run `streamlit run main.py`
 
-## preview:
+## some of the previews:
+### Chart Analysis:
+![img_2.png](img_2.png)
+### Market Screener:
+![img_1.png](img_1.png)
+### Trading Journal (mock)
 ![img.png](img.png)
+
 
 ### streamlit  cheat sheet:
  * https://share.streamlit.io/daniellewisdl/streamlit-cheat-sheet/app.py
