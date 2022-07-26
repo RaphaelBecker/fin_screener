@@ -19,6 +19,7 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
  * open cmd in project root
  * run `activate.bat`
  * run `streamlit run main.py`
+ * OR double click `finaap.bat` in project root on windows
 
 ## some of the previews:
 ### Chart Analysis:
