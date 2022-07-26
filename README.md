@@ -24,7 +24,7 @@ https://2.pmam.com/Thouhgts/analytics/streamlit-data-app/
 ### Chart Analysis:
 ![img_2.png](img_2.png)
 ### Market Screener:
-![img_1.png](img_1.png)
+![img_3.png](img_3.png)
 ### Trading Journal (mock)
 ![img.png](img.png)
 
