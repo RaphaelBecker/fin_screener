@@ -118,7 +118,7 @@ with col_func4:
 
 
 
-keyWords = st.text_input('Entry Strategy', value='close>SMA(20) AND close>MIDPOINT(200)')
+keyWords = st.text_input('Entry Strategy', value='close>SMA(100) AND close<SMA(50) AND SMA(100)>SMA(200) AND SMA(50)>SMA(100)')
 keyWords = keyWords.strip()
 if " AND " in keyWords:
     keyWords = keyWords.split(" AND ")
