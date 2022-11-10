@@ -1,3 +1,4 @@
+import csv
 import datetime
 from dataclasses import dataclass
 
@@ -12,31 +13,32 @@ from utils import talib_functions
 from indicators import heikin_ashi as heik_ash
 
 fundamental_values = \
-[
-'P/E',
-'Forward P/E',
-'PEG',
-'P/S',
-'P/B',
-'Price/Cash',
-'Price/Free Cash Flow',
-'EPS growth',
-'Sales growth',
-'Return on Assets',
-'Return on Equity',
-'Return on Investment',
-'Current Ratio',
-'Quick Ratio',
-'LT Debt/Equity',
-'Debt/Equity',
-'Gross Margin',
-'Operating Margin',
-'Net Profit Margin',
-'Payout Ratio',
-'Insider Ownership',
-'Insider Transactions',
-'Institutional Ownership'
-]
+    [
+        'P/E',
+        'Forward P/E',
+        'PEG',
+        'P/S',
+        'P/B',
+        'Price/Cash',
+        'Price/Free Cash Flow',
+        'EPS growth',
+        'Sales growth',
+        'Return on Assets',
+        'Return on Equity',
+        'Return on Investment',
+        'Current Ratio',
+        'Quick Ratio',
+        'LT Debt/Equity',
+        'Debt/Equity',
+        'Gross Margin',
+        'Operating Margin',
+        'Net Profit Margin',
+        'Payout Ratio',
+        'Insider Ownership',
+        'Insider Transactions',
+        'Institutional Ownership'
+    ]
+
 
 @dataclass
 class Condition:
@@ -76,49 +78,13 @@ def get_talib_functions_format_list(nested_dict):
     list_ = list(nested_dict.values())
     return list(map(lambda x: list(x.keys())[0], list_))
 
-col_setting1, col_setting2, col_setting3, col_setting4 = st.columns(4)
 
-with col_setting1:
-    heikin_ashi = False
-    if st.checkbox("Heikin Anshi"):
-        heikin_ashi = True
+heikin_ashi = False
+if st.checkbox("Heikin Anshi"):
+    heikin_ashi = True
 
-with col_setting2:
-    if st.checkbox("placeholder1"):
-        placeholder1 = True
-
-with col_setting3:
-    if st.checkbox("placeholder2"):
-        placeholder2 = True
-
-with col_setting4:
-    if st.checkbox("placeholder3"):
-        placeholder3 = True
-
-col_func1, col_func2, col_func3, col_func4 = st.columns(4)
-
-with col_func1:
-    option = st.selectbox('Overlap studies:',
-                          ['search function'] + get_talib_functions_format_list(
-                              talib_functions.overlap_studies_functions))
-
-
-with col_func2:
-    option = st.selectbox('Momentum Indicators:',
-                          ['search Momentum'])
-
-
-with col_func3:
-    option = st.selectbox('Volume Indicators:',
-                          ['search Volume'])
-
-with col_func4:
-    option = st.selectbox('Fundamentals Indicators:',
-                          ['search fundamentals'] + fundamental_values)
-
-
-
-keyWords = st.text_input('Entry Strategy', value='close>SMA(100) AND close<SMA(50) AND SMA(100)>SMA(200) AND SMA(50)>SMA(100)')
+keyWords = st.text_input('Entry Strategy',
+                         value='close>SMA(100) AND close<SMA(50) AND SMA(100)>SMA(200) AND SMA(50)>SMA(100)')
 keyWords = keyWords.strip()
 if " AND " in keyWords:
     keyWords = keyWords.split(" AND ")
@@ -291,44 +257,66 @@ def custom_indicator():
     pass
 
 
-def get_tickers_indicators_dataframe_list(cond_dataclass_list, index_ticker_list, start_date, end_date):
+def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
+    # Fetch data from database:
+    hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
+    if heikin_ashi:
+        hlocv_dataframe = heik_ash.heikin_ashi(hlocv_dataframe)
+    hlocv_dataframe.symbol = str(ticker)
+    hlocv_dataframe.company = ""
+    hlocv_dataframe.pair = "USD"
+    # st.write(str(ticker))
+    final_hlocv_dataframe = hlocv_dataframe
+    keep = False
+    for condition in cond_dataclass_list:
+        if condition.price:
+            final_hlocv_dataframe, keep = price_indicator_comparison(condition, final_hlocv_dataframe)
+            if not keep:
+                break
+        elif condition.indicator1 and condition.indicator2 and not condition.price:
+            final_hlocv_dataframe, keep = indicator1_indicator2_comparison(condition, final_hlocv_dataframe)
+            if not keep:
+                break
+    if keep:
+        return final_hlocv_dataframe, ticker, True
+    else:
+        return None, None, False
+
+
+def get_ticker_list_conditions_met(cond_dataclass_list, index_ticker_list, start_date, end_date):
     tickers_indicators_dataframe_list = []
-    # TODO: delete, because of development reduced to 5 dataframes
-    index_ticker_list = index_ticker_list
+    ticker_list_condition_met = []
 
     for i, ticker in enumerate(index_ticker_list):
-        # Fetch data from database:
-        hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
-        if heikin_ashi:
-            hlocv_dataframe = heik_ash.heikin_ashi(hlocv_dataframe)
-        hlocv_dataframe.symbol = str(ticker)
-        hlocv_dataframe.company = ""
-        hlocv_dataframe.pair = "USD"
-        # st.write(str(ticker))
-        final_hlocv_dataframe = hlocv_dataframe
-        keep = False
-        for condition in cond_dataclass_list:
-            if condition.price:
-                final_hlocv_dataframe, keep = price_indicator_comparison(condition, final_hlocv_dataframe)
-                if not keep:
-                    break
-            elif condition.indicator1 and condition.indicator2 and not condition.price:
-                final_hlocv_dataframe, keep = indicator1_indicator2_comparison(condition, final_hlocv_dataframe)
-                if not keep:
-                    break
-        if keep:
-            tickers_indicators_dataframe_list.append(final_hlocv_dataframe)
-    return tickers_indicators_dataframe_list
+        df_ticker_cm, ticker_cm, filled = get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date)
+        if filled:
+            tickers_indicators_dataframe_list.append(df_ticker_cm)
+            ticker_list_condition_met.append(ticker_cm)
+    return tickers_indicators_dataframe_list, ticker_list_condition_met
 
 
 def plot_chart(ticker_indicators_dataframe):
     return chart_mpl.plot_chart(ticker_indicators_dataframe)
 
 
+def save_to_csv(tickers: []):
+    filename = 'tickers_condition_met.csv'
+    with open(filename, 'w', encoding='utf8', newline='') as output_file:
+        mywriter = csv.writer(output_file, delimiter=',')
+        mywriter.writerow(tickers)
+
+def read_from_csv() -> []:
+    ticker_list = []
+    with open('tickers_condition_met.csv', 'r', newline='') as file:
+        myreader = csv.reader(file, delimiter=',')
+        for rows in myreader:
+            ticker_list.append(rows)
+    return ticker_list[0]
+
 # main:
 
 # Set start and end point to fetch data:
-start_date = st.sidebar.date_input('Start date', datetime.datetime(2021, 8, 1))
+start_date = st.sidebar.date_input('Start date', datetime.datetime(2019, 1, 1))
 end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())
 
 entryStrategyQueryList = strategy_list(keyWords)
@@ -339,27 +327,31 @@ with st.expander("Parsed:"):
     condition_dataclass_list = parse_etry_query_to_condition_dataclass_list(entryStrategyQueryList)
     st.write(condition_dataclass_list)
 
-
 tickersIndicatorsDataframeList = []
-if st.checkbox("Run screener"):
+if st.button("Run screener"):
     with st.spinner('Screening the market ..'):
-        tickersIndicatorsDataframeList = get_tickers_indicators_dataframe_list(condition_dataclass_list,
-                                                                               get_index_ticker_list(
-                                                                                   index_selector),
-                                                                               start_date,
-                                                                               end_date)
+        tickersIndicatorsDataframeList, tickers_condition_met_list = get_ticker_list_conditions_met(condition_dataclass_list,
+                                                                        get_index_ticker_list(
+                                                                            index_selector),
+                                                                        start_date,
+                                                                        end_date)
     st.success(
         f"Screened the market! Found {len(tickersIndicatorsDataframeList)} out of {len(get_index_ticker_list(index_selector))}")
 
+    save_to_csv(tickers_condition_met_list)
 
-    with st.expander("Dataframes"):
-        if len(tickersIndicatorsDataframeList) > 0:
-            st.dataframe(tickersIndicatorsDataframeList[0])
-        #for dataframe in tickersIndicatorsDataframeList:
-        #    st.dataframe(dataframe)
+tickers_condition_met_list = read_from_csv()
+st.write(f"Currents screening results ({len(tickers_condition_met_list)})")
+st.write(tickers_condition_met_list)
 
-    with st.expander("PLots"):
+if st.button("Plot tickers"):
+
+    tickersIndicatorsDataframeList, _ = get_ticker_list_conditions_met(
+        condition_dataclass_list,
+        read_from_csv(),
+        start_date,
+        end_date)
+    with st.spinner('Processing and plotting ..'):
         for i, dataframe in enumerate(tickersIndicatorsDataframeList):
             figure = plot_chart(dataframe)
             st.pyplot(figure)
-
