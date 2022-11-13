@@ -305,6 +305,7 @@ def save_to_csv(tickers: []):
         mywriter = csv.writer(output_file, delimiter=',')
         mywriter.writerow(tickers)
 
+
 def read_from_csv() -> []:
     ticker_list = []
     with open('tickers_condition_met.csv', 'r', newline='') as file:
@@ -312,6 +313,7 @@ def read_from_csv() -> []:
         for rows in myreader:
             ticker_list.append(rows)
     return ticker_list[0]
+
 
 # main:
 
@@ -330,11 +332,12 @@ with st.expander("Parsed:"):
 tickersIndicatorsDataframeList = []
 if st.button("Run screener"):
     with st.spinner('Screening the market ..'):
-        tickersIndicatorsDataframeList, tickers_condition_met_list = get_ticker_list_conditions_met(condition_dataclass_list,
-                                                                        get_index_ticker_list(
-                                                                            index_selector),
-                                                                        start_date,
-                                                                        end_date)
+        tickersIndicatorsDataframeList, tickers_condition_met_list = get_ticker_list_conditions_met(
+            condition_dataclass_list,
+            get_index_ticker_list(
+                index_selector),
+            start_date,
+            end_date)
     st.success(
         f"Screened the market! Found {len(tickersIndicatorsDataframeList)} out of {len(get_index_ticker_list(index_selector))}")
 

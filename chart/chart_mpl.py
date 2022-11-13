@@ -1,8 +1,13 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas
 from mplfinance.original_flavor import candlestick_ohlc
 from matplotlib.pylab import date2num
 import utils.talib_functions as talib_funcs
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+from volume_profile import vol_profile
 
 
 def overlap_studies(ohlcvind_ticker_dataframe: pandas.DataFrame):
@@ -73,6 +78,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     plt.style.use('seaborn-white')
 
     plt.rcParams.update({'font.size': 8})
+
     fig = plt.figure()
 
     # ax_candle = fig.add_axes((0, 0.72, 1, 0.32))
@@ -96,12 +102,43 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
                    alpha=0.5,
                    label=overlap_study)
 
-    ax_candle.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
+    ax_candle.legend(loc='best', fontsize='small', frameon=True, fancybox=True)
     ax_candle.get_legend().set_title("legend")
+
+    # Volume Profile on y axis:
+    closes = ohlcvind_ticker_dataframe['close']
+    volumes = ohlcvind_ticker_dataframe['volume']
+    lower = closes.min()
+    upper = closes.max()
+    closes_ax = np.linspace(lower, upper, num=80)
+    vol_ax = vol_profile.get_vol_axes(closes, volumes, closes_ax)
+    length_df = ohlcvind_ticker_dataframe.size / 40
+    max_vol_ax = vol_ax.max()
+    bar_length_scale_factor = length_df / max_vol_ax
+    vol_ax = vol_ax * bar_length_scale_factor
+    vol_peaks_closes = []
+    for i in range(0, len(vol_ax)):
+        try:
+            if vol_ax[i-3] < vol_ax[i] \
+                and vol_ax[i-2] < vol_ax[i] \
+                and vol_ax[i-1] < vol_ax[i] \
+                and vol_ax[i+1] < vol_ax[i] \
+                and vol_ax[i+2] < vol_ax[i]:
+                vol_peaks_closes.append(closes_ax[i])
+        except IndexError:
+            pass
+    bar_height = (upper - lower) / 80
+    ax_candle.barh(closes_ax, vol_ax, height=bar_height, left=ohlcvind_ticker_dataframe[0:1].index, align='center', alpha=0.25, facecolor='b')
+
+    for vol_peak_close in vol_peaks_closes:
+        ax_candle.axhline(y=float(vol_peak_close), linewidth=1, alpha=.2, color='b', linestyle='-')
+        ax_candle.text(x=min(ohlcvind_ticker_dataframe.index), y=float(vol_peak_close), s='{:.2f}'.format(float(vol_peak_close)), alpha=1, color='b',fontsize='x-small')
 
     # add price at last candle:
     last_close = ohlcvind_ticker_dataframe.at[max(ohlcvind_ticker_dataframe.index), 'close']
     ax_candle.text(x=max(ohlcvind_ticker_dataframe.index), y=float(last_close),
-                   s='  ← ' + '{:.2f}'.format(float(last_close)), alpha=1, color='blue', fontsize='x-small')
+                   s='  ← ' + '{:.2f}'.format(float(last_close)), alpha=1, color='r', fontsize='x-small')
+    # horizonzal line at price
+    ax_candle.axhline(y=float(last_close), linewidth=.5, color='r', linestyle='dashed')
 
     return fig
