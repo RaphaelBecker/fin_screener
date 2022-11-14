@@ -71,7 +71,7 @@ end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())
 
 # Update Database on sidebar:
 database_update_progress_bar = st.sidebar.progress(0)
-if st.sidebar.button('update database'):
+if st.sidebar.button('update OHLCV-database'):
     success_ticker_list, failed_ticker_list = database.snapshot(helpers.get_symbol_list('data/smp500_symbols.csv'),
                                                                 database_update_progress_bar)
     st.sidebar.write(f"Success: {len(success_ticker_list)} / Failed: {len(failed_ticker_list)} "
