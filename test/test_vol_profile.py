@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 import data.db_connector as database
-import volume_profile.vol_profile as vol_profile
+import indicators.vol_profile as vol_profile
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 

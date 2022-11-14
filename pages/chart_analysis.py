@@ -15,6 +15,7 @@ stock_index_selector = st.sidebar.selectbox('Select index', sorted(dataset.marke
 
 # Select ticker from choosen market:
 tickers = dataset.get_tickers(stock_index_selector)
+ticker_selector = None
 if isinstance(tickers, list):
     ticker_selector = st.sidebar.selectbox('Select ticker', sorted(tickers), index=0)
 elif isinstance(tickers, dict):
@@ -23,14 +24,6 @@ elif isinstance(tickers, dict):
 # Set start and end point to fetch data:
 start_date = st.sidebar.date_input('Start date', datetime.datetime(2021, 8, 1))
 end_date = st.sidebar.date_input('End date', datetime.datetime.now().date())
-
-# Update Database on sidebar:
-database_update_progress_bar = st.sidebar.progress(0)
-if st.sidebar.button('update database'):
-    success_ticker_list, failed_ticker_list = database.snapshot(helpers.get_symbol_list('data/smp500_symbols.csv'), database_update_progress_bar)
-    st.sidebar.write(f"Success: {len(success_ticker_list)} / Failed: {len(failed_ticker_list)} "
-                     f" Total: {len(success_ticker_list) +len(failed_ticker_list)}")
-    database_update_progress_bar.success("Successfully updated database!")
 
 # Fetch data from database
 df_ticker = database.get_hlocv_from_db(ticker_selector, start_date, end_date)
