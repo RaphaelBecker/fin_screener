@@ -91,7 +91,7 @@ def get_talib_functions_format_list(nested_dict):
     list_ = list(nested_dict.values())
     return list(map(lambda x: list(x.keys())[0], list_))
 
-
+st.write('### Technicals')
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 heikin_ashi = False
@@ -359,11 +359,11 @@ with st.expander("Parsed:"):
     condition_dataclass_list = parse_entry_query_to_condition_dataclass_list(entryStrategyQueryList)
     st.write(condition_dataclass_list)
 
-header = {'symbol': [], 'sector': [], 'close (USD)': [], 'last day': [], 'last date': []}
+header = {'symbol': [], 'sector': [], 'close (USD)': [], 'change (1d)': [], 'last date': []}
 current_screen_list = pd.DataFrame(header)
 tickersIndicatorsDataframeList = []
 
-if st.button("Run screener"):
+if st.button("Run technical screener"):
     with st.spinner('Screening the market ..'):
         tickersIndicatorsDataframeList, tickers_condition_met_list = get_ticker_list_conditions_met(
             condition_dataclass_list,
@@ -379,17 +379,42 @@ if st.button("Run screener"):
         last_open = round(df.tail(1).iloc[0]['open'], 2)
         last_close = round(df.tail(1).iloc[0]['close'], 2)
         percent_gain = str(round((last_close-last_open), 2)) + " % "
-        row = {'symbol': str(ticker), 'sector': "htbf", 'close (USD)': str(last_close), 'last day': percent_gain, 'last date': date_str}
+        row = {'symbol': str(ticker), 'sector': "htbf", 'close (USD)': str(last_close), 'change (1d)': percent_gain, 'last date': date_str}
         current_screen_list = current_screen_list.append(row, ignore_index=True)
 
     save_to_csv(current_screen_list)
 
 current_screen_list = read_from_csv()
-st.write(f"Last screening results ({len(current_screen_list)})")
-st.dataframe(data=current_screen_list)
+st.write(f"Last screening results:")
+st.dataframe(data=current_screen_list.style.highlight_max(axis=0))
 
+st.markdown("""---""")
+st.write('#### Fundamentals')
+if st.checkbox("Enable filter"):
+    fund_col0, fund_col1, fund_col2, fund_col3, fund_col4, fund_col5 = st.columns(6)
+
+    with fund_col0:
+        max_peg_ration = st.text_input('Max PEG-Ratio', '2')
+    with fund_col1:
+        min_beta = st.text_input('Min beta', '1.1')
+    with fund_col2:
+        min_revenueGrowth = st.text_input('Min revenueGrowth', '0.08')
+    with fund_col3:
+        min_returnOnEquity = st.text_input('Min returnOnEquity', '1.5')
+    with fund_col4:
+        min_returnOnAssets = st.text_input('Min returnOnAssets', '0.20')
+    with fund_col5:
+        min_dividendRate = st.text_input('Min dividendRate', '0.9')
+
+
+if st.button("Add fundamental Stats"):
+    current_screen_list = read_from_csv()
+    st.write(f"After fundamental filter: ({len(current_screen_list)})")
+    st.dataframe(data=current_screen_list)
+
+st.markdown("""---""")
+st.write('#### Generate charts and reports')
 if st.button("Plot tickers"):
-
     tickersIndicatorsDataframeList, _ = get_ticker_list_conditions_met(
         condition_dataclass_list,
         read_from_csv()['symbol'],
