@@ -3,6 +3,7 @@ import pandas
 from mplfinance.original_flavor import candlestick_ohlc
 from matplotlib.pylab import date2num
 import utils.talib_functions as talib_funcs
+from data import db_connector
 
 from indicators import vol_profile
 
@@ -69,8 +70,10 @@ def math_operators():
 
 
 def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
+    ticker_info = db_connector.get_ticker_info(ohlcvind_ticker_dataframe.symbol )
+    long_name = ticker_info["longName"][0]
     if ohlcvind_ticker_dataframe.symbol:
-        title_string = "Symbol: " + ohlcvind_ticker_dataframe.symbol + ", last: " + str(
+        title_string = "Symbol: " + ohlcvind_ticker_dataframe.symbol + ": " + long_name + ", last: " + str(
             ohlcvind_ticker_dataframe.tail(1).index.item().date())
     else:
         title_string = "title not available"
@@ -91,7 +94,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     ax_candle = fig.add_axes((0, 0.20, 1, 0.8))
     ax_candle.tick_params(axis='y', which='both', labelleft=False, labelright=True)
 
-    plt.suptitle(title_string, ha='center', y=1.14, fontsize=10)
+    plt.suptitle(title_string, ha='center', y=1.03, fontsize=10)
 
     # Format x-axis ticks as dates
     ax_candle.xaxis_date()
@@ -123,7 +126,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     momentum_indicators_list = momentum_indicators(ohlcvind_ticker_dataframe)
     if momentum_indicators_list:
         # create subplot section:
-        ax_momentum = fig.add_axes((0, 0.00, 1, 0.2), sharex=ax_candle)
+        ax_momentum = fig.add_axes((0, 0.001, 1, 0.2), sharex=ax_candle)
         ax_momentum.tick_params(axis='y', which='both', labelleft=False, labelright=True)
 
         for momentum_indicator in momentum_indicators_list:
@@ -160,4 +163,24 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     # Horizontal red dot line at price level
     ax_candle.axhline(y=float(last_close), linewidth=.5, color='r', linestyle='dashed')
 
+    # add info text to bottom:
+    # ax_text = fig.add_axes((0, 0, 1, 0.001), sharex=ax_candle)
+    long_business_summary = ticker_info["longBusinessSummary"][0]
+    words = long_business_summary.split()
+    long_business_summary_line_broken = ""
+    word_count = 0
+    break_count = 0
+    for word in words:
+        long_business_summary_line_broken += word + " "
+        word_count += 1
+        if word_count == 20 or "." in word:
+            long_business_summary_line_broken += "\n"
+            word_count = 0
+            break_count = break_count + 1
+
+    break_count = (break_count / 55) + ((1/break_count) * 1.4)
+    industry_sector = "Sektor: " + ticker_info["sector"][0] + ",      Industry: " + ticker_info["industry"][0]
+
+    plt.figtext(0, -.06, industry_sector, ha="left", fontsize='x-small')
+    plt.figtext(0, -break_count, long_business_summary_line_broken, ha="left", fontsize='x-small')
     return fig
