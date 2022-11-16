@@ -95,9 +95,19 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
 
     # plot overlap studies:
     for overlap_study in overlap_studies(ohlcvind_ticker_dataframe):
-        ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[overlap_study],
-                   alpha=0.5,
-                   label=overlap_study)
+        # BBANDS has 3 lines to plot:
+        if overlap_study == 'BBANDS':
+            ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["upper_bollinger"],
+                           alpha=0.5)
+            ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["middle_bollinger"],
+                           alpha=0.5, label=overlap_study)
+            ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["lower_bollinger"],
+                           alpha=0.5)
+        # overlap studies with one single line to plot
+        else:
+            ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[overlap_study],
+                       alpha=0.5,
+                       label=overlap_study)
 
     ax_candle.legend(loc='best', fontsize='small', frameon=True, fancybox=True)
     ax_candle.get_legend().set_title("legend")

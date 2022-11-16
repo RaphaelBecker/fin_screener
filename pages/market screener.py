@@ -12,6 +12,7 @@ from data import db_connector as database
 from chart import chart_mpl
 from utils import talib_functions
 from indicators import heikin_ashi as heik_ash
+from indicators import bb_contraction as bb_contraction
 
 fundamental_values = \
     [
@@ -119,10 +120,10 @@ with col5:
     if st.checkbox("TDI"):
         tdi = True
 
-bb_contraction = False
+bb_sqeeze = False
 with col6:
     if st.checkbox("BB squeeze"):
-        bb_contraction = True
+        bb_sqeeze = True
 
 keyWords = st.text_input('Entry Strategy',
                          value='close<SMA(50) AND close>SMA(100) AND SMA(50)>SMA(100) AND SMA(100)>SMA(150) AND SMA(150)>SMA(200)')
@@ -303,6 +304,10 @@ def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
     hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
     if heikin_ashi:
         hlocv_dataframe = heik_ash.heikin_ashi(hlocv_dataframe)
+    if bb_sqeeze:
+        bb_contr_signal_bool = bb_contraction.run_bb_contr(hlocv_dataframe)
+        if not bb_contr_signal_bool:
+            return None, None, False
     hlocv_dataframe.symbol = str(ticker)
     hlocv_dataframe.company = ""
     hlocv_dataframe.pair = "USD"
@@ -374,6 +379,7 @@ if st.button("Run technical screener"):
     st.success(
         f"Screened the market! Found {len(tickersIndicatorsDataframeList)} out of {len(get_index_ticker_list(index_selector))}")
 
+    # summarize screening results
     for ticker, df in zip(tickers_condition_met_list, tickersIndicatorsDataframeList):
         date_str = str(df.tail(1).index[0]).split(" ", 1)[0]
         last_open = round(df.tail(1).iloc[0]['open'], 2)
@@ -384,6 +390,7 @@ if st.button("Run technical screener"):
 
     save_to_csv(current_screen_list)
 
+# display screening results
 current_screen_list = read_from_csv()
 st.write(f"Last screening results:")
 st.dataframe(data=current_screen_list.style.highlight_max(axis=0))
