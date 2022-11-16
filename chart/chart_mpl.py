@@ -23,8 +23,17 @@ def overlap_studies(ohlcvind_ticker_dataframe: pandas.DataFrame):
     return plotted_overlap_studies
 
 
-def momentum_indicators():
-    pass
+def momentum_indicators(ohlcvind_ticker_dataframe: pandas.DataFrame):
+    columns = ohlcvind_ticker_dataframe.columns
+    columns_compare = list(map(lambda col: col.split("_", 1)[0], columns))
+    list_ = list(talib_funcs.momentum_indicators.keys())
+    matches = set(columns_compare).intersection(list_)  # keep matchings values
+    plotted_momentum_indicators = []
+    for column in columns:
+        for match in matches:
+            if match in column:
+                plotted_momentum_indicators.append(column)
+    return plotted_momentum_indicators
 
 
 def volume_indicators():
@@ -79,7 +88,7 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
     fig = plt.figure()
 
     # ax_candle = fig.add_axes((0, 0.72, 1, 0.32))
-    ax_candle = fig.add_axes((0, 0.40, 1, 0.7))
+    ax_candle = fig.add_axes((0, 0.20, 1, 0.8))
     ax_candle.tick_params(axis='y', which='both', labelleft=False, labelright=True)
 
     plt.suptitle(title_string, ha='center', y=1.14, fontsize=10)
@@ -108,6 +117,25 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
             ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[overlap_study],
                        alpha=0.5,
                        label=overlap_study)
+
+
+    # plot overlap studies:
+    momentum_indicators_list = momentum_indicators(ohlcvind_ticker_dataframe)
+    if momentum_indicators_list:
+        # create subplot section:
+        ax_momentum = fig.add_axes((0, 0.00, 1, 0.2), sharex=ax_candle)
+        ax_momentum.tick_params(axis='y', which='both', labelleft=False, labelright=True)
+
+        for momentum_indicator in momentum_indicators_list:
+            ax_momentum.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[momentum_indicator],
+                       alpha=0.5,
+                       label=momentum_indicator)
+            last_momentum_value = ohlcvind_ticker_dataframe[momentum_indicator].tail(1)[0]
+            ax_momentum.text(x=max(ohlcvind_ticker_dataframe.index), y=float(last_momentum_value),
+                  s=' - ' + '{:.2f}'.format(float(last_momentum_value)), alpha=1, color='b', fontsize='x-small')
+
+        ax_momentum.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
+        ax_momentum.get_legend().set_title("Momentum indicator")
 
     ax_candle.legend(loc='best', fontsize='small', frameon=True, fancybox=True)
     ax_candle.get_legend().set_title("legend")

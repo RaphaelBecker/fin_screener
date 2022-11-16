@@ -46,6 +46,7 @@ fundamental_values = \
 class Condition:
     price: str = None
     operator: str = None
+    comparator: str = None
     indicator1: str = None
     indicator1_args: list = None
     indicator2: str = None
@@ -91,6 +92,7 @@ def get_index_ticker_list(index_ticker_list):
 def get_talib_functions_format_list(nested_dict):
     list_ = list(nested_dict.values())
     return list(map(lambda x: list(x.keys())[0], list_))
+
 
 st.write('### Technicals')
 col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -188,12 +190,20 @@ def argument_list(key: str) -> bool:
         return False
 
 
+def comparator(key: str) -> bool:
+    if key.isnumeric():
+        return True
+    else:
+        return False
+
+
 def indicator(key: str) -> bool:
     if not price(key):
         if not operator(key):
-            return True
-        else:
-            return False
+            if not comparator(key):
+                return True
+            else:
+                return False
 
 
 def parse_entry_query_to_condition_dataclass_list(entry_strategy_query_list):
@@ -205,6 +215,8 @@ def parse_entry_query_to_condition_dataclass_list(entry_strategy_query_list):
                 condition.price = item
             if operator(item):
                 condition.operator = item
+            if comparator(item):
+                condition.comparator = item
             if indicator(item):
                 if not condition.indicator1:
                     if "(" in item:
@@ -295,8 +307,20 @@ def indicator1_indicator2_comparison(condition, hlocv_dataframe):
     return hlocv_dataframe, keep
 
 
-def custom_indicator():
-    pass
+def comparator_indicator_1_comparison(condition, hlocv_dataframe):
+    function_talib1 = condition.indicator1
+    func_args1 = condition.indicator1_args
+    comparator = condition.comparator
+
+    hlocv_dataframe, function_col_name1 = compute_talib_function(function_talib1, func_args1, hlocv_dataframe)
+
+    keep = False
+    if condition.operator == "<":
+        keep = float(hlocv_dataframe[function_col_name1].tail(1).values[0]) < float(comparator)
+    if condition.operator == ">":
+        keep = float(hlocv_dataframe[function_col_name1].tail(1).values[0]) > float(comparator)
+
+    return hlocv_dataframe, keep
 
 
 def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
@@ -321,6 +345,10 @@ def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
                 break
         elif condition.indicator1 and condition.indicator2 and not condition.price:
             final_hlocv_dataframe, keep = indicator1_indicator2_comparison(condition, final_hlocv_dataframe)
+            if not keep:
+                break
+        elif condition.comparator and not condition.indicator2:
+            final_hlocv_dataframe, keep = comparator_indicator_1_comparison(condition, final_hlocv_dataframe)
             if not keep:
                 break
     if keep:
@@ -384,8 +412,9 @@ if st.button("Run technical screener"):
         date_str = str(df.tail(1).index[0]).split(" ", 1)[0]
         last_open = round(df.tail(1).iloc[0]['open'], 2)
         last_close = round(df.tail(1).iloc[0]['close'], 2)
-        percent_gain = str(round((last_close-last_open), 2)) + " % "
-        row = {'symbol': str(ticker), 'sector': "htbf", 'close (USD)': str(last_close), 'change (1d)': percent_gain, 'last date': date_str}
+        percent_gain = str(round((last_close - last_open), 2)) + " % "
+        row = {'symbol': str(ticker), 'sector': "htbf", 'close (USD)': str(last_close), 'change (1d)': percent_gain,
+               'last date': date_str}
         current_screen_list = current_screen_list.append(row, ignore_index=True)
 
     save_to_csv(current_screen_list)
@@ -393,7 +422,7 @@ if st.button("Run technical screener"):
 # display screening results
 current_screen_list = read_from_csv()
 st.write(f"Last screening results:")
-st.dataframe(data=current_screen_list.style.highlight_max(axis=0))
+st.dataframe(data=current_screen_list)
 
 st.markdown("""---""")
 st.write('#### Fundamentals')
@@ -412,7 +441,6 @@ if st.checkbox("Enable filter"):
         min_returnOnAssets = st.text_input('Min returnOnAssets', '0.20')
     with fund_col5:
         min_dividendRate = st.text_input('Min dividendRate', '0.9')
-
 
 if st.button("Add fundamental Stats"):
     current_screen_list = read_from_csv()
