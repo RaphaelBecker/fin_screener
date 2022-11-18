@@ -128,7 +128,7 @@ with col6:
         bb_sqeeze = True
 
 keyWords = st.text_input('Entry Strategy',
-                         value='close<SMA(50) AND close>SMA(100) AND SMA(50)>SMA(100) AND SMA(100)>SMA(150) AND SMA(150)>SMA(200)')
+                         value='close>SMA(50) AND close>SMA(150) AND close>SMA(200) AND SMA(150)>SMA(200) AND SMA(50)>SMA(150) AND SMA(50)>SMA(200) AND RSI(14)>65')
 keyWords = keyWords.strip()
 if " AND " in keyWords:
     keyWords = keyWords.split(" AND ")
@@ -191,6 +191,9 @@ def argument_list(key: str) -> bool:
 
 
 def comparator(key: str) -> bool:
+    key = key.replace(",", "")
+    key = key.replace(".", "")
+    key = key.replace("-", "")
     if key.isnumeric():
         return True
     else:
@@ -248,6 +251,19 @@ def parse_entry_query_to_condition_dataclass_list(entry_strategy_query_list):
     return condition_list
 
 
+def talib_define_arguments(talib_function, function_talib, func_args, hlocv_dataframe):
+    if func_args:
+        # INSERT NEW INDICATORS HERE WHEN ARGUMENTS ARE NON STANDARD: (close, args)
+        if function_talib == "ATR":
+            return talib_function(hlocv_dataframe['high'], hlocv_dataframe['low'], hlocv_dataframe['close'], func_args)
+        if function_talib == "CCI":
+            return talib_function(hlocv_dataframe['high'], hlocv_dataframe['low'], hlocv_dataframe['close'], func_args)
+        else:
+            return talib_function(hlocv_dataframe['close'], func_args)
+    else:
+        return talib_function(hlocv_dataframe['close'])
+
+
 def compute_talib_function(function_talib, func_args, hlocv_dataframe):
     function_col_name = function_talib
     if type(func_args) == list:
@@ -259,10 +275,7 @@ def compute_talib_function(function_talib, func_args, hlocv_dataframe):
         talib_function = getattr(talib, function_talib)
         hlocv_dataframe[function_col_name] = np.nan
         try:
-            if func_args:
-                result = talib_function(hlocv_dataframe['close'], func_args)
-            else:
-                result = talib_function(hlocv_dataframe['close'])
+            result = talib_define_arguments(talib_function, function_talib, func_args, hlocv_dataframe)
             hlocv_dataframe[function_col_name] = result.to_frame().replace(0, np.nan).replace(100, 1)
         except IndexError as e:
             print(f"IndexError: {e}")
@@ -329,7 +342,7 @@ def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
     if heikin_ashi:
         hlocv_dataframe = heik_ash.heikin_ashi(hlocv_dataframe)
     if bb_sqeeze:
-        bb_contr_signal_bool = bb_contraction.run_bb_contr(hlocv_dataframe)
+        bb_contr_signal_bool, hlocv_dataframe = bb_contraction.run_bb_contr(hlocv_dataframe)
         if not bb_contr_signal_bool:
             return None, None, False
     hlocv_dataframe.symbol = str(ticker)
@@ -423,29 +436,6 @@ if st.button("Run technical screener"):
 current_screen_list = read_from_csv()
 st.write(f"Last screening results:")
 st.dataframe(data=current_screen_list)
-
-st.markdown("""---""")
-st.write('#### Fundamentals')
-if st.checkbox("Enable filter"):
-    fund_col0, fund_col1, fund_col2, fund_col3, fund_col4, fund_col5 = st.columns(6)
-
-    with fund_col0:
-        max_peg_ration = st.text_input('Max PEG-Ratio', '2')
-    with fund_col1:
-        min_beta = st.text_input('Min beta', '1.1')
-    with fund_col2:
-        min_revenueGrowth = st.text_input('Min revenueGrowth', '0.08')
-    with fund_col3:
-        min_returnOnEquity = st.text_input('Min returnOnEquity', '1.5')
-    with fund_col4:
-        min_returnOnAssets = st.text_input('Min returnOnAssets', '0.20')
-    with fund_col5:
-        min_dividendRate = st.text_input('Min dividendRate', '0.9')
-
-if st.button("Add fundamental Stats"):
-    current_screen_list = read_from_csv()
-    st.write(f"After fundamental filter: ({len(current_screen_list)})")
-    st.dataframe(data=current_screen_list)
 
 st.markdown("""---""")
 st.write('#### Generate charts and reports')

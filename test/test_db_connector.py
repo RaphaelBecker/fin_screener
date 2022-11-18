@@ -236,7 +236,7 @@ class TestDbConnector(unittest.TestCase):
         trailingPegRatio                2.8961
 
         """
-        ticker_info = db_connector.get_ticker_info("aapl")
+        ticker_info = db_connector.get_ticker_info("CTVA")
         print(type(ticker_info))
         print(ticker_info.to_string())
         print(ticker_info)
