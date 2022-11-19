@@ -207,3 +207,7 @@ overlap_studies_functions = {
     "TRIMA": {"TRIMA(close, timeperiod=30)": "trima"},
     "WMA": {"WMA(close, timeperiod=30)": "wma"}
 }
+
+custom_indicators = {
+    'TDI': {"None"}
+}

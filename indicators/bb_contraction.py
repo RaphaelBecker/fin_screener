@@ -7,7 +7,7 @@ from talib import MA_Type
 
 def compute_bb_bands(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe["upper_bollinger"], dataframe["middle_bollinger"], dataframe[
-        "lower_bollinger"] = talib.BBANDS(dataframe["close"], timeperiod=20, matype=1)  # MA_Type.T3
+        "lower_bollinger"] = talib.BBANDS(dataframe["close"], timeperiod=20, matype=MA_Type.T3)  # MA_Type.T3
     return dataframe
 
 

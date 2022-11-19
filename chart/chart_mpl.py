@@ -12,7 +12,7 @@ def overlap_studies(ohlcvind_ticker_dataframe: pandas.DataFrame):
     columns = ohlcvind_ticker_dataframe.columns
     columns_compare = list(map(lambda col: col.split("_", 1)[0], columns))
     list_ = list(talib_funcs.overlap_studies_functions.keys())
-    matches = set(columns_compare).intersection(list_) # keep matchings values
+    matches = set(columns_compare).intersection(list_)  # keep matchings values
     plotted_overlap_studies = []
     for column in columns:
         for match in matches:
@@ -76,6 +76,19 @@ def math_transform():
 
 def math_operators():
     pass
+
+
+def custom_indicators(ohlcvind_ticker_dataframe: pandas.DataFrame):
+    columns = ohlcvind_ticker_dataframe.columns
+    columns_compare = list(map(lambda col: col.split("_", 1)[0], columns))
+    list_ = list(talib_funcs.custom_indicators.keys())
+    matches = set(columns_compare).intersection(list_)  # keep matchings values
+    plotted_custom_indicators = []
+    for column in columns:
+        for match in matches:
+            if match in column:
+                plotted_custom_indicators.append(column)
+    return plotted_custom_indicators
 
 
 def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
@@ -154,32 +167,33 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
             ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["lower_bollinger"],
                            alpha=0.5, label="lower BB")
             # debug:
-            #ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["KC_UPPER"],
+            # ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["KC_UPPER"],
             #               alpha=0.5, label="upper KC")
-            #ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["KC_LOWER"],
+            # ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["KC_LOWER"],
             #               alpha=0.5, label="lower KC")
         # overlap studies with one single line to plot
         else:
             ax_candle.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[overlap_study],
-                       alpha=0.5,
-                       label=overlap_study)
-
+                           alpha=0.5,
+                           label=overlap_study)
 
     # plot Indicators below chart:
     momentum_indicators_list = momentum_indicators(ohlcvind_ticker_dataframe)
     volatility_indicators_list = volatility_indicators(ohlcvind_ticker_dataframe)
-    if momentum_indicators_list or volatility_indicators_list:
+    custom_id_indicators_list = custom_indicators(ohlcvind_ticker_dataframe)
+    if momentum_indicators_list or volatility_indicators_list or custom_id_indicators_list:
         # create subplot section:
         ax_indicators = fig.add_axes((0, 0.001, 1, 0.2), sharex=ax_candle)
         ax_indicators.tick_params(axis='y', which='both', labelleft=False, labelright=True)
 
         for momentum_indicator in momentum_indicators_list:
             ax_indicators.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[momentum_indicator],
-                       alpha=0.5,
-                       label="Momentum: " + momentum_indicator)
+                               alpha=0.5,
+                               label="Momentum: " + momentum_indicator)
             last_momentum_value = ohlcvind_ticker_dataframe[momentum_indicator].tail(1)[0]
             ax_indicators.text(x=max(ohlcvind_ticker_dataframe.index), y=float(last_momentum_value),
-                  s=' < ' + '{:.2f}'.format(float(last_momentum_value)), alpha=1, color='b', fontsize='x-small')
+                               s=' < ' + '{:.2f}'.format(float(last_momentum_value)), alpha=1, color='b',
+                               fontsize='x-small')
 
         for volatility_indicator in volatility_indicators_list:
             ax_indicators.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe[volatility_indicator],
@@ -189,6 +203,25 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
             ax_indicators.text(x=max(ohlcvind_ticker_dataframe.index), y=float(last_momentum_value),
                                s=' < ' + '{:.2f}'.format(float(last_momentum_value)), alpha=1, color='b',
                                fontsize='x-small')
+
+        for custom_id_indicator in custom_id_indicators_list:
+            if custom_id_indicator == "TDI_signal":
+                ax_indicators.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["rsi"],
+                                   alpha=0.5,
+                                   label="TDI rsi_14")
+                ax_indicators.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["rsi_sig_line"],
+                                   alpha=0.5,
+                                   label="TDI rsi signal")
+                ax_indicators.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["upper_rsi_bollinger"],
+                                   alpha=0.5,
+                                   label="TDI upper bb")
+                ax_indicators.plot(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["lower_rsi_bollinger"],
+                                   alpha=0.5,
+                                   label="TDI lower bb")
+                ax_indicators.scatter(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["TDI_signal"],
+                                   alpha=0.5,
+                                   label="SIGNAL")
+
 
         ax_indicators.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
         ax_indicators.get_legend().set_title("Indicators")

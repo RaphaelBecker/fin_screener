@@ -13,6 +13,7 @@ from chart import chart_mpl
 from utils import talib_functions
 from indicators import heikin_ashi as heik_ash
 from indicators import bb_contraction as bb_contraction
+from indicators import tdi as tdi_module
 
 fundamental_values = \
     [
@@ -344,6 +345,10 @@ def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
     if bb_sqeeze:
         bb_contr_signal_bool, hlocv_dataframe = bb_contraction.run_bb_contr(hlocv_dataframe)
         if not bb_contr_signal_bool:
+            return None, None, False
+    if tdi:
+        tdi_signal, hlocv_dataframe = tdi_module.compute_tdi_signal(hlocv_dataframe)
+        if not tdi_signal:
             return None, None, False
     hlocv_dataframe.symbol = str(ticker)
     hlocv_dataframe.company = ""
