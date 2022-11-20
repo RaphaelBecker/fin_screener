@@ -1,0 +1,3 @@
+ticker,entry_date,entry_price,entry_rule,entry_strategy,exit_date,exit_price,exit_rule,exit_strategy,haikin_ashi,close_at_supp,bull_div,tdi,bb_squeeze,target_gain,gain,tax,fees
+ABC,13/03/2022,192,close SMA(200) AND RSI(14)<12,MArk mInervini + TDI + Support EMA,14/03/2022,143,close SMA(100) AND RSI(14)<45,"Under SMA20, überkaufte Situaition ausnützen",True,True,True,True,True,30pips,"132,2",23,23
+ABC,13/03/2022,192,close SMA(200) AND RSI(14)<12,MArk mInervini + TDI + Support EMA,14/03/2022,143,close SMA(100) AND RSI(14)<45,"Under SMA20, überkaufte Situaition ausnützen",True,True,True,True,True,30pips,"132,2",23,23

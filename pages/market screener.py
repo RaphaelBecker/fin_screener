@@ -129,7 +129,7 @@ with col6:
         bb_sqeeze = True
 
 keyWords = st.text_input('Entry Strategy',
-                         value='close>SMA(50) AND close>SMA(150) AND close>SMA(200) AND SMA(150)>SMA(200) AND SMA(50)>SMA(150) AND SMA(50)>SMA(200) AND RSI(14)>65')
+                         value='close>SMA(200) AND SMA(150)>SMA(200) AND SMA(100)>SMA(150) AND RSI(14)<55')
 keyWords = keyWords.strip()
 if " AND " in keyWords:
     keyWords = keyWords.split(" AND ")
@@ -444,7 +444,7 @@ st.dataframe(data=current_screen_list)
 
 st.markdown("""---""")
 st.write('#### Generate charts and reports')
-if st.button("Plot tickers"):
+with st.expander("Plot tickers"):
     tickersIndicatorsDataframeList, _ = get_ticker_list_conditions_met(
         condition_dataclass_list,
         read_from_csv()['symbol'],
