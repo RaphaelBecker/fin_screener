@@ -1,5 +1,6 @@
 import csv
 import datetime
+import time
 from dataclasses import dataclass
 
 import pandas as pd
@@ -14,6 +15,7 @@ from utils import talib_functions
 from indicators import heikin_ashi as heik_ash
 from indicators import bb_contraction as bb_contraction
 from indicators import tdi as tdi_module
+from indicators import divergence as divergence_module
 
 fundamental_values = \
     [
@@ -95,8 +97,7 @@ def get_talib_functions_format_list(nested_dict):
     return list(map(lambda x: list(x.keys())[0], list_))
 
 
-st.write('### Technicals')
-col1, col2, col3, col4, col5, col6 = st.columns(6)
+col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
 heikin_ashi = False
 with col1:
@@ -105,7 +106,7 @@ with col1:
 
 vol_support = False
 with col2:
-    if st.checkbox("close @ vol supp"):
+    if st.checkbox("@vol_supp"):
         vol_support = True
 
 bull_div = False
@@ -115,7 +116,7 @@ with col3:
 
 bullish_candle = False
 with col4:
-    if st.checkbox("bull last candle"):
+    if st.checkbox("bull candle"):
         bullish_candle = True
 
 tdi = False
@@ -127,6 +128,16 @@ bb_sqeeze = False
 with col6:
     if st.checkbox("BB squeeze"):
         bb_sqeeze = True
+
+vola_box = False
+with col7:
+    if st.checkbox("vola&box"):
+        vola_box = True
+
+higher_highs_and_lows = False
+with col8:
+    if st.checkbox("hh_hl"):
+        higher_highs_and_lows = True
 
 keyWords = st.text_input('Entry Strategy',
                          value='close>SMA(200) AND SMA(150)>SMA(200) AND SMA(100)>SMA(150) AND RSI(14)<55')
@@ -350,6 +361,11 @@ def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
         tdi_signal, hlocv_dataframe = tdi_module.compute_tdi_signal(hlocv_dataframe)
         if not tdi_signal:
             return None, None, False
+    if bull_div:
+        hlocv_dataframe = divergence_module.divergence(hlocv_dataframe, "macd_div_signal", 0, 0, 6, 80, 0)
+        print(hlocv_dataframe.to_string())
+        print("DEBUG IN market_screener line 367")
+        time.sleep(5)
     hlocv_dataframe.symbol = str(ticker)
     hlocv_dataframe.company = ""
     hlocv_dataframe.pair = "USD"

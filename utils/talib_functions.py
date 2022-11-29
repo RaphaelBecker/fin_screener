@@ -209,5 +209,6 @@ overlap_studies_functions = {
 }
 
 custom_indicators = {
-    'TDI': {"None"}
+    'TDI': {"None"},
+    'macd_div_signal': {"None"}
 }
