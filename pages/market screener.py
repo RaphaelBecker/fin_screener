@@ -362,10 +362,11 @@ def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
         if not tdi_signal:
             return None, None, False
     if bull_div:
-        hlocv_dataframe = divergence_module.divergence(hlocv_dataframe, "macd_div_signal", 0, 0, 6, 80, 0)
-        print(hlocv_dataframe.to_string())
-        print("DEBUG IN market_screener line 367")
-        time.sleep(5)
+        div_signal, hlocv_dataframe = divergence_module.divergence(hlocv_dataframe, "rsi_div_signal", 0, 0, 6, 80, 0)
+        if not div_signal:
+            return None, None, False
+        else:
+            print(hlocv_dataframe.to_string())
     hlocv_dataframe.symbol = str(ticker)
     hlocv_dataframe.company = ""
     hlocv_dataframe.pair = "USD"

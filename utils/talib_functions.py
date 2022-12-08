@@ -210,5 +210,6 @@ overlap_studies_functions = {
 
 custom_indicators = {
     'TDI': {"None"},
-    'macd_div_signal': {"None"}
+    'macd_div_signal': {"None"},
+    'rsi_div_signal': {"None"}
 }

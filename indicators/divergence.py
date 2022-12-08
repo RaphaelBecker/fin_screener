@@ -38,7 +38,7 @@ def find_simple_peaks(x, threshold: int, min_width: int) -> []:
     return return_arr
 
 
-def find_and_insert_peaks_in_dataframe(dataframe, indicator, lower_barrier, upper_barrier, min_width=6):
+def find_and_insert_peaks_in_dataframe(dataframe, indicator, lower_barrier, upper_barrier, min_width=20):
     peak_name = str(indicator.lower()) + "_peak"
     dataframe[peak_name] = np.nan
 
@@ -82,7 +82,7 @@ def compute_divergence_signal(dataframe, peaks_df, indicator, divergence_name, p
                             dataframe.at[peaks_df.index[i + 1], 'close']))
                         and price_x_rsi > price_x_indicator_filter_d):
                     # print(f"{float(data.at[peaks_df.index[i + 1], indicator])} - {float(data.at[peaks_df.index[i + 1] + 1, indicator])} > {downbreak}")
-                    dataframe.at[peaks_df.index[i + 1], divergence_name] = -0.1  # bear flag
+                    dataframe.at[peaks_df.index[i + 1], divergence_name] = 10 # bear flag
             # BULL:
             if dataframe.at[peaks_df.index[i], indicator] < threshold_first and dataframe.at[
                 peaks_df.index[i + 1], indicator] < threshold_last:
@@ -90,7 +90,7 @@ def compute_divergence_signal(dataframe, peaks_df, indicator, divergence_name, p
                         and (float(dataframe.at[peaks_df.index[i], 'close']) > float(
                             dataframe.at[peaks_df.index[i + 1], 'close']))
                         and price_x_rsi > price_x_indicator_filter_d):
-                    dataframe.at[peaks_df.index[i + 1], divergence_name] = 100  # bull flag
+                    dataframe.at[peaks_df.index[i + 1], divergence_name] = 0  # bull flag
     except IndexError:
         pass
     return dataframe
@@ -124,4 +124,8 @@ def divergence(dataframe, divergence_name, lower_barrier, upper_barrier, min_wid
         dataframe = macd_div_run(dataframe, lower_barrier, upper_barrier, divergence_name, min_width, max_width_d,
                                  price_x_indicator_filter_d)
 
-    return dataframe
+    div_signal = True
+    if dataframe['rsi_div_signal'].tail(6).isnull().all():
+        div_signal = False
+
+    return div_signal, dataframe

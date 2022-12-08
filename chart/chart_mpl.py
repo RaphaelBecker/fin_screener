@@ -92,6 +92,8 @@ def custom_indicators(ohlcvind_ticker_dataframe: pandas.DataFrame):
                 plotted_custom_indicators.append(column)
     if 'macd_div_signal' in columns:
         plotted_custom_indicators.append('macd_div_signal')
+    if 'rsi_div_signal' in columns:
+        plotted_custom_indicators.append('rsi_div_signal')
     return plotted_custom_indicators
 
 
@@ -225,13 +227,13 @@ def plot_chart(ohlcvind_ticker_dataframe: pandas.DataFrame):
                 ax_indicators.scatter(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["TDI_signal"],
                                    alpha=0.5,
                                    label="SIGNAL")
-            if custom_id_indicator == "macd_div_signal":
-                ax_indicators.scatter(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["macd_div_signal"],
+            if custom_id_indicator == "rsi_div_signal":
+                ax_indicators.scatter(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["rsi_div_signal"],
                                    alpha=0.5,
-                                   label="MACD_div")
-                ax_indicators.scatter(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["macd_peak"],
+                                   label="rsi_div")
+                ax_indicators.scatter(ohlcvind_ticker_dataframe.index, ohlcvind_ticker_dataframe["rsi_peak"],
                                       alpha=0.5,
-                                      label="MACD_peak")
+                                      label="rsi_peak")
 
 
         ax_indicators.legend(loc='lower left', fontsize='small', frameon=True, fancybox=True)
