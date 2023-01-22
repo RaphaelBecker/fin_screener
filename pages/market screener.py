@@ -351,6 +351,9 @@ def comparator_indicator_1_comparison(condition, hlocv_dataframe):
 def get_ticker_condition_met(ticker, cond_dataclass_list, start_date, end_date):
     # Fetch data from database:
     hlocv_dataframe = database.get_hlocv_from_db(ticker, start_date, end_date)
+    # only process dataframes which contain data:
+    if hlocv_dataframe.shape[0] < 3:
+        return None, None, False
     if heikin_ashi:
         hlocv_dataframe = heik_ash.heikin_ashi(hlocv_dataframe)
     if bb_sqeeze:
