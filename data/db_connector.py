@@ -60,10 +60,10 @@ def get_ticker_info(ticker):
 
 
 def download_ticker_df(ticker, pair='USD', timeframe='1d', market='yahoo'):
-    df_ticker = pdr.DataReader(ticker, market, '2010-01-01', datetime.datetime.now().date(), retry_count=3, pause=.3)
+    ticker_data = yf.download(ticker, start='2010-01-01', end=datetime.datetime.now().date())
     # make all column names lower case:
-    df_ticker.columns = map(str.lower, df_ticker.columns)
-    return df_ticker
+    ticker_data.columns = map(str.lower, ticker_data.columns)
+    return ticker_data
 
 
 # DB  Functions
